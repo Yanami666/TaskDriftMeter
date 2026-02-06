@@ -1,10 +1,12 @@
+// app.js (Firebase SDK v12.9.0 - matches your firebase.js)
 import { db } from "./firebase.js";
+
 import {
   doc, setDoc, getDoc,
   collection, addDoc,
   query, orderBy, onSnapshot,
   serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+} from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
 const $ = (id) => document.getElementById(id);
 
@@ -16,7 +18,10 @@ function makeId(){ return crypto.getRandomValues(new Uint32Array(4)).join("-"); 
 function cleanCode(s){ return (s||"").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,12); }
 
 let memberId = localStorage.getItem(LS_MEMBER);
-if (!memberId){ memberId = makeId(); localStorage.setItem(LS_MEMBER, memberId); }
+if (!memberId){
+  memberId = makeId();
+  localStorage.setItem(LS_MEMBER, memberId);
+}
 
 let groupCode = localStorage.getItem(LS_GROUP) || "";
 if (groupCode) $("groupInput").value = groupCode;
@@ -37,7 +42,7 @@ $("createBtn").addEventListener("click", async () => {
     }, { merge:true });
 
     $("groupStatus").textContent = `Group created: ${groupCode}`;
-    await joinGroup(); // auto
+    await joinGroup(); // auto join
   } catch (e) {
     $("groupStatus").textContent = `Error: ${e.message}`;
   }
@@ -59,7 +64,6 @@ async function joinGroup(){
   groupCode = code;
   localStorage.setItem(LS_GROUP, groupCode);
 
-  // must exist
   const gRef = doc(db, "groups", groupCode);
   const gSnap = await getDoc(gRef);
   if (!gSnap.exists()) throw new Error("Group not found. Create it first.");
@@ -142,11 +146,12 @@ function render(totals, membersMap){
   for (const [mid, mins] of entries){
     const name = membersMap[mid] || "Member";
     const pct = Math.round((mins / max) * 100);
+
     const div = document.createElement("div");
     div.className = "item";
     div.innerHTML = `
       <div class="topline">
-        <div class="name">${escapeHtml(name)} <span class="muted">(${mid===localStorage.getItem("${LS_MEMBER}") ? "you" : "teammate"})</span></div>
+        <div class="name">${escapeHtml(name)} <span class="muted">(${mid===memberId ? "you" : "teammate"})</span></div>
         <div class="mono">${mins} min</div>
       </div>
       <div class="bar"><div style="width:${pct}%"></div></div>
@@ -156,5 +161,7 @@ function render(totals, membersMap){
 }
 
 function escapeHtml(str){
-  return (str||"").replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m]));
+  return (str||"").replace(/[&<>"']/g, m => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+  }[m]));
 }
