@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Task Drift Meter</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <header class="top">
+    <h1>Task Drift Meter</h1>
+    <p class="muted">Realtime group log (Firestore).</p>
+  </header>
+
+  <main class="wrap">
+    <section class="card">
+      <h2>1) Create / Join Group</h2>
+      <div class="row">
+        <label class="field">
+          <span>Name / Alias</span>
+          <input id="nameInput" placeholder="e.g. Ella / Member A" />
+        </label>
+
+        <label class="field">
+          <span>Group code</span>
+          <input id="groupInput" class="mono" placeholder="e.g. DTM01" />
+        </label>
+      </div>
+
+      <div class="row">
+        <button id="createBtn">Create group</button>
+        <button id="joinBtn">Join group</button>
+      </div>
+
+      <p id="groupStatus" class="muted"></p>
+    </section>
+
+    <section class="card">
+      <h2>2) Log time</h2>
+      <div class="row">
+        <label class="field">
+          <span>Time used</span>
+          <div class="row tight">
+            <input id="hoursInput" type="number" min="0" value="0" />
+            <span class="muted">hour</span>
+            <input id="minsInput" type="number" min="0" max="59" value="15" />
+            <span class="muted">min</span>
+          </div>
+        </label>
+
+        <label class="field">
+          <span>Subject</span>
+          <input id="subjectInput" placeholder="e.g. Wireframes / Research" />
+        </label>
+      </div>
+
+      <label class="field">
+        <span>Description</span>
+        <textarea id="descInput" rows="3" placeholder="One sentence: what did you do?"></textarea>
+      </label>
+
+      <div class="row">
+        <button id="logBtn">✅ Log entry</button>
+      </div>
+
+      <p id="logStatus" class="muted"></p>
+    </section>
+
+    <section class="card">
+      <h2>3) Dashboard (Totals)</h2>
+      <div id="dashList" class="list"></div>
+      <p class="muted small">Updates live when anyone logs.</p>
+    </section>
+  </main>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
