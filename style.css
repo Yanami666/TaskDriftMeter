@@ -24,3 +24,22 @@
   .name{font-weight:600}
   .bar{height:12px;background:#eee;border-radius:999px;overflow:hidden;margin-top:10px}
   .bar>div{height:100%;width:0%;background:#111}
+  .hide{display:none}
+.code{
+  border:1px dashed #bbb;
+  border-radius:12px;
+  padding:10px 12px;
+  background:#fff;
+  min-width:140px;
+  text-align:center;
+}
+.ghost{background:#fff}
+.pill{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:8px 10px;
+  border:1px solid #ddd;
+  border-radius:999px;
+  background:#fff;
+}

@@ -9,70 +9,146 @@
 <body>
   <header class="top">
     <h1>Task Drift Meter</h1>
-    <p class="muted">Realtime group log (Firestore).</p>
+    <p class="muted">Enter a group, then log work.</p>
   </header>
 
   <main class="wrap">
     <section class="card">
-      <h2>1) Create / Join Group</h2>
-      <div class="row">
-        <label class="field">
-          <span>Name / Alias</span>
-          <input id="nameInput" placeholder="e.g. Ella / Member A" />
-        </label>
-
-        <label class="field">
-          <span>Group code</span>
-          <input id="groupInput" class="mono" placeholder="e.g. DTM01" />
-        </label>
-      </div>
-
-      <div class="row">
-        <button id="createBtn">Create group</button>
-        <button id="joinBtn">Join group</button>
-      </div>
-
-      <p id="groupStatus" class="muted"></p>
-    </section>
-
-    <section class="card">
-      <h2>2) Log time</h2>
-      <div class="row">
-        <label class="field">
-          <span>Time used</span>
-          <div class="row tight">
-            <input id="hoursInput" type="number" min="0" value="0" />
-            <span class="muted">hour</span>
-            <input id="minsInput" type="number" min="0" max="59" value="15" />
-            <span class="muted">min</span>
-          </div>
-        </label>
-
-        <label class="field">
-          <span>Subject</span>
-          <input id="subjectInput" placeholder="e.g. Wireframes / Research" />
-        </label>
-      </div>
+      <h2>Create a group</h2>
 
       <label class="field">
-        <span>Description</span>
-        <textarea id="descInput" rows="3" placeholder="One sentence: what did you do?"></textarea>
+        <span>Your name / alias</span>
+        <input id="nameCreate" placeholder="e.g. Ella" />
       </label>
 
       <div class="row">
-        <button id="logBtn">✅ Log entry</button>
+        <button id="createBtn">Create group</button>
       </div>
 
-      <p id="logStatus" class="muted"></p>
+      <div id="createdBox" class="hide">
+        <p class="muted">Your group code:</p>
+        <div class="row">
+          <div class="code mono" id="createdCode">—</div>
+          <button id="copyBtn" class="ghost">Copy</button>
+        </div>
+        <div class="row">
+          <button id="enterBtn">Enter group →</button>
+        </div>
+      </div>
+
+      <p id="createStatus" class="muted"></p>
     </section>
 
     <section class="card">
-      <h2>3) Dashboard (Totals)</h2>
-      <div id="dashList" class="list"></div>
-      <p class="muted small">Updates live when anyone logs.</p>
+      <h2>Join a group</h2>
+
+      <label class="field">
+        <span>Your name / alias</span>
+        <input id="nameJoin" placeholder="e.g. Member A" />
+      </label>
+
+      <label class="field">
+        <span>Group code</span>
+        <input id="codeJoin" class="mono" placeholder="e.g. 149160" />
+      </label>
+
+      <div class="row">
+        <button id="joinBtn">Join group →</button>
+      </div>
+
+      <p id="joinStatus" class="muted"></p>
     </section>
   </main>
 
-  <script type="module" src="./app.js"></script>
+  <script type="module">
+    import { db } from "./firebase.js";
+    import {
+      doc, setDoc, getDoc, serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+    const $ = (id) => document.getElementById(id);
+
+    const LS_MEMBER = "tdm_member_id";
+    const LS_GROUP  = "tdm_group_code";
+    const LS_NAME   = "tdm_display_name";
+
+    function makeId(){ return crypto.getRandomValues(new Uint32Array(4)).join("-"); }
+    function cleanCode(s){ return (s||"").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,12); }
+
+    let memberId = localStorage.getItem(LS_MEMBER);
+    if (!memberId){ memberId = makeId(); localStorage.setItem(LS_MEMBER, memberId); }
+
+    let createdCode = "";
+
+    $("createBtn").addEventListener("click", async () => {
+      try {
+        const name = ($("nameCreate").value || "").trim() || "Member";
+        localStorage.setItem(LS_NAME, name);
+
+        // generate a simple numeric-ish code (you can change style)
+        createdCode = String(Math.floor(100000 + Math.random() * 900000));
+        createdCode = cleanCode(createdCode);
+
+        await setDoc(doc(db, "groups", createdCode), {
+          createdAt: serverTimestamp(),
+          createdBy: memberId
+        }, { merge: true });
+
+        $("createdCode").textContent = createdCode;
+        $("createdBox").classList.remove("hide");
+        $("createStatus").textContent = `Created group ${createdCode}. Share this code.`;
+      } catch (e) {
+        $("createStatus").textContent = `Error: ${e.message}`;
+      }
+    });
+
+    $("copyBtn").addEventListener("click", async () => {
+      try {
+        if (!createdCode) return;
+        await navigator.clipboard.writeText(createdCode);
+        $("createStatus").textContent = "Copied ✓";
+        setTimeout(()=> $("createStatus").textContent="", 1000);
+      } catch {
+        $("createStatus").textContent = "Copy failed (browser blocked).";
+      }
+    });
+
+    $("enterBtn").addEventListener("click", async () => {
+      if (!createdCode) return;
+      localStorage.setItem(LS_GROUP, createdCode);
+      // optional: auto-join membership now, so app page is ready
+      await ensureMember(createdCode, localStorage.getItem(LS_NAME) || "Member");
+      window.location.href = `./app.html?group=${encodeURIComponent(createdCode)}`;
+    });
+
+    $("joinBtn").addEventListener("click", async () => {
+      try {
+        const name = ($("nameJoin").value || "").trim() || "Member";
+        const code = cleanCode($("codeJoin").value);
+        if (!code) throw new Error("Enter group code.");
+
+        localStorage.setItem(LS_NAME, name);
+        localStorage.setItem(LS_GROUP, code);
+
+        // check group exists
+        const gSnap = await getDoc(doc(db, "groups", code));
+        if (!gSnap.exists()) throw new Error("Group not found. Check the code.");
+
+        await ensureMember(code, name);
+        $("joinStatus").textContent = `Joined ${code} ✓ Redirecting...`;
+
+        window.location.href = `./app.html?group=${encodeURIComponent(code)}`;
+      } catch (e) {
+        $("joinStatus").textContent = `Error: ${e.message}`;
+      }
+    });
+
+    async function ensureMember(code, name){
+      await setDoc(doc(db, "groups", code, "members", memberId), {
+        displayName: name,
+        joinedAt: serverTimestamp()
+      }, { merge: true });
+    }
+  </script>
 </body>
 </html>
