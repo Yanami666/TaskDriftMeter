@@ -1,4 +1,4 @@
-// app.js (for app.html)
+// app.js (for app.html) — Firebase SDK v12.9.0
 import { db } from "./firebase.js";
 import {
   doc, setDoc, getDoc,
@@ -34,7 +34,6 @@ $("logBtn").addEventListener("click", async () => {
 });
 
 async function init(){
-  // read group from URL first, fallback to localStorage
   const params = new URLSearchParams(window.location.search);
   const urlGroup = cleanCode(params.get("group") || "");
   const storedGroup = cleanCode(localStorage.getItem(LS_GROUP) || "");
@@ -117,6 +116,7 @@ function startRealtime(){
       const e = d.data();
       totals[e.memberId] = (totals[e.memberId] || 0) + Number(e.minutes || 0);
     });
+
     render(totals, membersMap);
   });
 
@@ -145,6 +145,111 @@ function render(totals, membersMap){
     `;
     list.appendChild(div);
   }
+
+  // draw pie chart under bars
+  renderPie(entries, membersMap, memberId);
+}
+
+function renderPie(entries, membersMap, selfMemberId){
+  const canvas = document.getElementById("pieCanvas");
+  const legend = document.getElementById("pieLegend");
+  if (!canvas || !legend) return;
+
+  const ctx = canvas.getContext("2d");
+  const w = canvas.width;
+  const h = canvas.height;
+
+  // clear
+  ctx.clearRect(0, 0, w, h);
+  legend.innerHTML = "";
+
+  const total = entries.reduce((sum, [,mins]) => sum + Number(mins || 0), 0);
+
+  if (!entries.length || total <= 0){
+    const cx = w/2, cy = h/2;
+    const r = Math.min(w,h)*0.38;
+
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI*2);
+    ctx.strokeStyle = "#ddd";
+    ctx.lineWidth = 18;
+    ctx.stroke();
+
+    ctx.fillStyle = "#666";
+    ctx.font = "14px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+    ctx.textAlign = "center";
+    ctx.fillText("No data yet", cx, cy);
+    return;
+  }
+
+  const cx = w/2, cy = h/2;
+  const r = Math.min(w,h)*0.38;
+
+  let start = -Math.PI / 2;
+
+  entries.forEach(([mid, mins], idx) => {
+    const value = Number(mins || 0);
+    const angle = (value / total) * Math.PI * 2;
+    const end = start + angle;
+
+    const color = pieColor(idx);
+
+    // slice
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, start, end);
+    ctx.closePath();
+    ctx.fillStyle = color;
+    ctx.fill();
+
+    start = end;
+
+    // legend
+    const name = membersMap[mid] || "Member";
+    const pct = Math.round((value / total) * 100);
+
+    const item = document.createElement("div");
+    item.className = "legendItem";
+
+    const sw = document.createElement("span");
+    sw.className = "swatch";
+    sw.style.background = color;
+
+    const label = document.createElement("div");
+    const youTag = (mid === selfMemberId) ? " (you)" : "";
+    label.innerHTML = `
+      <div class="name">${escapeHtml(name)}<span class="muted">${youTag}</span></div>
+      <div class="muted">${value} min • ${pct}%</div>
+    `;
+
+    item.appendChild(sw);
+    item.appendChild(label);
+    legend.appendChild(item);
+  });
+
+  // donut hole
+  ctx.beginPath();
+  ctx.arc(cx, cy, r*0.55, 0, Math.PI*2);
+  ctx.fillStyle = "#fff";
+  ctx.fill();
+
+  // center text
+  ctx.fillStyle = "#111";
+  ctx.font = "600 14px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  ctx.textAlign = "center";
+  ctx.fillText("Total", cx, cy - 6);
+
+  ctx.fillStyle = "#666";
+  ctx.font = "13px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  ctx.fillText(`${total} min`, cx, cy + 14);
+}
+
+function pieColor(i){
+  const palette = [
+    "#111827","#2563EB","#DC2626","#16A34A","#7C3AED",
+    "#D97706","#0EA5E9","#DB2777","#4B5563","#84CC16"
+  ];
+  return palette[i % palette.length];
 }
 
 function escapeHtml(str){

@@ -62,9 +62,7 @@
 
   <script type="module">
     import { db } from "./firebase.js";
-    import {
-      doc, setDoc, getDoc, serverTimestamp
-    } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+    import { doc, setDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
     const $ = (id) => document.getElementById(id);
 
@@ -85,7 +83,7 @@
         const name = ($("nameCreate").value || "").trim() || "Member";
         localStorage.setItem(LS_NAME, name);
 
-        // generate a simple numeric-ish code (you can change style)
+        // 6-digit code (fast for prototyping)
         createdCode = String(Math.floor(100000 + Math.random() * 900000));
         createdCode = cleanCode(createdCode);
 
@@ -114,11 +112,14 @@
     });
 
     $("enterBtn").addEventListener("click", async () => {
-      if (!createdCode) return;
-      localStorage.setItem(LS_GROUP, createdCode);
-      // optional: auto-join membership now, so app page is ready
-      await ensureMember(createdCode, localStorage.getItem(LS_NAME) || "Member");
-      window.location.href = `./app.html?group=${encodeURIComponent(createdCode)}`;
+      try {
+        if (!createdCode) return;
+        localStorage.setItem(LS_GROUP, createdCode);
+        await ensureMember(createdCode, localStorage.getItem(LS_NAME) || "Member");
+        window.location.href = `./app.html?group=${encodeURIComponent(createdCode)}`;
+      } catch (e) {
+        $("createStatus").textContent = `Error: ${e.message}`;
+      }
     });
 
     $("joinBtn").addEventListener("click", async () => {
@@ -130,13 +131,12 @@
         localStorage.setItem(LS_NAME, name);
         localStorage.setItem(LS_GROUP, code);
 
-        // check group exists
         const gSnap = await getDoc(doc(db, "groups", code));
         if (!gSnap.exists()) throw new Error("Group not found. Check the code.");
 
         await ensureMember(code, name);
-        $("joinStatus").textContent = `Joined ${code} ✓ Redirecting...`;
 
+        $("joinStatus").textContent = `Joined ${code} ✓ Redirecting...`;
         window.location.href = `./app.html?group=${encodeURIComponent(code)}`;
       } catch (e) {
         $("joinStatus").textContent = `Error: ${e.message}`;

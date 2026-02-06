@@ -55,8 +55,15 @@
 
     <section class="card">
       <h2>Dashboard (Totals)</h2>
+
       <div id="dashList" class="list"></div>
-      <p class="muted small">Updates live when anyone logs.</p>
+
+      <div class="pieWrap">
+        <canvas id="pieCanvas" width="360" height="360"></canvas>
+        <div id="pieLegend" class="legend"></div>
+      </div>
+
+      <p class="muted small">Pie shows share of total minutes.</p>
     </section>
   </main>
 
