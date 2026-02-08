@@ -15,15 +15,53 @@
   <main class="wrap">
     <section class="card">
       <h2>Group</h2>
-      <div class="row">
+      <div class="row groupRow">
         <div class="pill mono">Group: <span id="groupLabel">—</span></div>
-        <button id="backBtn" class="ghost">← Back</button>
+
+        <div class="row rightTools">
+          <button id="todoToggleBtn" class="ghost">To Do List</button>
+          <button id="backBtn" class="ghost">← Back</button>
+        </div>
       </div>
       <p id="appStatus" class="muted"></p>
     </section>
 
+    <!-- TODO MODULE (hidden by default) -->
+    <section id="todoCard" class="card hide">
+      <h2>To Do List (shared)</h2>
+
+      <div class="row">
+        <label class="field" style="min-width:260px;flex:2;">
+          <span>Type a task</span>
+          <textarea id="todoAddInput" rows="2"
+            placeholder="Enter = add • Shift+Enter = new line"></textarea>
+        </label>
+
+        <label class="field" style="min-width:160px;flex:0;">
+          <span>Color</span>
+          <select id="todoColorSelect">
+            <option value="0">Blue</option>
+            <option value="1">Red</option>
+            <option value="2">Green</option>
+            <option value="3">Purple</option>
+          </select>
+        </label>
+
+        <button id="todoAddBtn">+ Add</button>
+
+        <label class="checkRow">
+          <input id="showDoneToggle" type="checkbox" />
+          <span class="muted">Show done</span>
+        </label>
+      </div>
+
+      <div id="todoList" class="todoList"></div>
+      <p id="todoStatus" class="muted small"></p>
+    </section>
+
     <section class="card">
       <h2>Log time</h2>
+
       <div class="row">
         <label class="field">
           <span>Time used</span>
@@ -36,10 +74,15 @@
         </label>
 
         <label class="field">
-          <span>Subject</span>
-          <input id="subjectInput" placeholder="e.g. Wireframes / Research" />
+          <span>Task (from To Do)</span>
+          <select id="taskSelect"></select>
         </label>
       </div>
+
+      <label id="otherSubjectWrap" class="field hide">
+        <span>Other (custom subject)</span>
+        <input id="otherSubjectInput" placeholder="e.g. extra meeting / random fix" />
+      </label>
 
       <label class="field">
         <span>Description</span>
@@ -63,7 +106,10 @@
         <div id="pieLegend" class="legend"></div>
       </div>
 
-      <p class="muted small">Pie shows share of total minutes.</p>
+      <div class="legendTitle muted small">Task color legend (from To Do)</div>
+      <div id="taskLegend" class="taskLegend"></div>
+
+      <p class="muted small">Bars are stacked by task. Pie shows share by member.</p>
     </section>
   </main>
 
