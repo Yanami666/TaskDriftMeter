@@ -9,7 +9,7 @@
 <body>
   <header class="top">
     <h1>Task Drift Meter</h1>
-    <p class="muted">Realtime group log (Firestore).</p>
+    <p class="muted">Realtime group work meter.</p>
   </header>
 
   <main class="wrap">
@@ -34,7 +34,7 @@
         <label class="field" style="min-width:260px;flex:2;">
           <span>Type a task</span>
           <textarea id="todoAddInput" rows="2"
-            placeholder="Enter = add • Shift+Enter = new line"></textarea>
+            placeholder="type your task"></textarea>
         </label>
 
         <label class="field" style="min-width:160px;flex:0;">
@@ -51,7 +51,7 @@
 
         <label class="checkRow">
           <input id="showDoneToggle" type="checkbox" />
-          <span class="muted">Show done</span>
+          <span class="muted">Show Finished</span>
         </label>
       </div>
 
@@ -60,7 +60,7 @@
     </section>
 
     <section class="card">
-      <h2>Log time</h2>
+      <h2>Working time</h2>
 
       <div class="row">
         <label class="field">
@@ -74,30 +74,30 @@
         </label>
 
         <label class="field">
-          <span>Task (from To Do)</span>
+          <span>Task</span>
           <select id="taskSelect"></select>
         </label>
       </div>
 
       <label id="otherSubjectWrap" class="field hide">
-        <span>Other (custom subject)</span>
-        <input id="otherSubjectInput" placeholder="e.g. extra meeting / random fix" />
+        <span>Other</span>
+        <input id="otherSubjectInput" placeholder="other work not mentioned" />
       </label>
 
       <label class="field">
         <span>Description</span>
-        <textarea id="descInput" rows="3" placeholder="One sentence: what did you do?"></textarea>
+        <textarea id="descInput" rows="3" placeholder="What did you do?"></textarea>
       </label>
 
       <div class="row">
-        <button id="logBtn">✅ Log entry</button>
+        <button id="logBtn">✅ Upload</button>
       </div>
 
       <p id="logStatus" class="muted"></p>
     </section>
 
     <section class="card">
-      <h2>Dashboard (Totals)</h2>
+      <h2>Dashboard</h2>
 
       <div id="dashList" class="list"></div>
 
@@ -106,10 +106,10 @@
         <div id="pieLegend" class="legend"></div>
       </div>
 
-      <div class="legendTitle muted small">Task color legend (from To Do)</div>
+      <div class="legendTitle muted small">Tasks</div>
       <div id="taskLegend" class="taskLegend"></div>
 
-      <p class="muted small">Bars are stacked by task. Pie shows share by member.</p>
+      <p class="muted small">.</p>
     </section>
   </main>
 
