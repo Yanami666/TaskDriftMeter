@@ -39,15 +39,14 @@ function memberColor(mid){
   return MEMBER_PALETTE[n % MEMBER_PALETTE.length];
 }
 
-// Task colors (ONLY 4, user-choosable)
-const TASK_COLORS = ["#2563EB", "#DC2626", "#16A34A", "#7C3AED"]; // blue, red, green, purple
+// Task colors (4, user-choosable)
+const TASK_COLORS = ["#2563EB", "#DC2626", "#16A34A", "#7C3AED"]; // Blue, Red, Green, Purple
 function clampColorIndex(i){
   const n = Number(i);
   if (!Number.isFinite(n)) return 0;
   return Math.max(0, Math.min(3, Math.floor(n)));
 }
 function fallbackTaskIndex(todoId){
-  // if older tasks didn't have colorIndex saved, pick stable default but DO NOT write
   return hashToInt(String(todoId)) % 4;
 }
 function taskColorFromTodo(todo){
@@ -68,15 +67,14 @@ let totalsByMember = {}; // memberId -> minutes
 let minutesByMemberTask = {}; // memberId -> { taskKey -> minutes }
 let eventsCache = [];    // events snapshot cache
 
+// UI state
+let openTodoId = null; // which task panel is expanded
+
 init();
 
 /* -------------------- UI bindings -------------------- */
 $("backBtn")?.addEventListener("click", () => {
   window.location.href = "./index.html";
-});
-
-$("todoToggleBtn")?.addEventListener("click", () => {
-  $("todoCard").classList.toggle("hide");
 });
 
 // Add button = add task (same as Enter)
@@ -92,18 +90,7 @@ $("todoAddInput")?.addEventListener("keydown", (e) => {
 
 $("showDoneToggle")?.addEventListener("change", () => {
   renderTodoList();
-  renderTaskSelect();
   renderTaskLegend();
-});
-
-$("taskSelect")?.addEventListener("change", () => {
-  const v = $("taskSelect").value;
-  $("otherSubjectWrap").classList.toggle("hide", v !== "__OTHER__");
-});
-
-$("logBtn")?.addEventListener("click", async () => {
-  try { await logEntry(); }
-  catch (e) { $("logStatus").textContent = `Error: ${e.message}`; }
 });
 
 /* -------------------- init + realtime -------------------- */
@@ -180,8 +167,10 @@ function startRealtime(){
     todosMap = map;
     todosList = list;
 
+    // if open panel task got deleted, close it
+    if (openTodoId && !todosMap[openTodoId]) openTodoId = null;
+
     renderTodoList();
-    renderTaskSelect();
     renderTaskLegend();
     renderAll();
   }));
@@ -222,7 +211,7 @@ async function addTodoFromInput(){
     await addDoc(collection(db,"groups",groupCode,"todos"), {
       text,
       done: false,
-      colorIndex: idx,          // ✅ store chosen color
+      colorIndex: idx,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
       updatedBy: memberId,
@@ -232,6 +221,35 @@ async function addTodoFromInput(){
   }
 }
 
+/* -------------------- Per-task log helpers -------------------- */
+function minutesFromInputs(hEl, mEl){
+  const h = Math.max(0, Number(hEl.value || 0));
+  const m = Math.max(0, Number(mEl.value || 0));
+  return h * 60 + m;
+}
+
+async function logEntryForTodo(todoId, hoursEl, minsEl, descEl, statusEl){
+  const minutes = minutesFromInputs(hoursEl, minsEl);
+  if (minutes <= 0) throw new Error("Time must be > 0 min.");
+
+  const todo = todosMap[todoId];
+  const subjectText = todo?.text || "Task";
+  const desc = (descEl.value || "").trim();
+
+  await addDoc(collection(db, "groups", groupCode, "events"), {
+    memberId,
+    minutes,
+    todoId,
+    subjectText,
+    desc,
+    createdAt: serverTimestamp()
+  });
+
+  statusEl.textContent = `Logged ${minutes} min ✓`;
+  setTimeout(()=> statusEl.textContent = "", 1200);
+}
+
+/* -------------------- Render Todo list (with toggle panels) -------------------- */
 function renderTodoList(){
   const listEl = $("todoList");
   if (!listEl) return;
@@ -251,6 +269,14 @@ function renderTodoList(){
   for (const t of filtered){
     const row = document.createElement("div");
     row.className = "todoItem";
+    row.setAttribute("data-todo-id", t.id);
+
+    // top line
+    const top = document.createElement("div");
+    top.className = "todoTop";
+
+    const left = document.createElement("div");
+    left.className = "todoLeft";
 
     const dot = document.createElement("span");
     dot.className = "taskDot";
@@ -270,14 +296,12 @@ function renderTodoList(){
     const input = document.createElement("input");
     input.className = "todoText";
     input.value = t.text;
-
-    input.addEventListener("keydown", async (e)=>{
-      if (e.key === "Enter") {
+    input.addEventListener("keydown", (e)=>{
+      if (e.key === "Enter"){
         e.preventDefault();
         input.blur();
       }
     });
-
     input.addEventListener("blur", async ()=>{
       const next = (input.value||"").trim() || "Untitled";
       if (next === t.text) return;
@@ -288,7 +312,14 @@ function renderTodoList(){
       });
     });
 
-    // ✅ color picker per task (4 options)
+    left.appendChild(dot);
+    left.appendChild(check);
+    left.appendChild(input);
+
+    const right = document.createElement("div");
+    right.className = "todoRight";
+
+    // color picker
     const colorPick = document.createElement("select");
     colorPick.className = "todoColorPick";
     colorPick.innerHTML = `
@@ -299,7 +330,6 @@ function renderTodoList(){
     `;
     const currentIdx = (t.colorIndex == null) ? fallbackTaskIndex(t.id) : clampColorIndex(t.colorIndex);
     colorPick.value = String(currentIdx);
-
     colorPick.addEventListener("change", async ()=>{
       const idx = clampColorIndex(colorPick.value);
       await updateDoc(doc(db,"groups",groupCode,"todos",t.id), {
@@ -309,9 +339,17 @@ function renderTodoList(){
       });
     });
 
-    const actions = document.createElement("div");
-    actions.className = "todoActions";
+    // toggle button
+    const toggleBtn = document.createElement("button");
+    toggleBtn.className = "smallBtn ghost";
+    toggleBtn.textContent = (openTodoId === t.id) ? "Close" : "Log time";
+    toggleBtn.addEventListener("click", (e)=>{
+      e.preventDefault();
+      openTodoId = (openTodoId === t.id) ? null : t.id;
+      renderTodoList(); // re-render to show/hide panel (simple & reliable)
+    });
 
+    // delete
     const del = document.createElement("button");
     del.className = "smallBtn ghost";
     del.textContent = "Delete";
@@ -320,90 +358,65 @@ function renderTodoList(){
       await deleteDoc(doc(db,"groups",groupCode,"todos",t.id));
     });
 
-    actions.appendChild(del);
+    right.appendChild(colorPick);
+    right.appendChild(toggleBtn);
+    right.appendChild(del);
 
-    row.appendChild(dot);
-    row.appendChild(check);
-    row.appendChild(input);
-    row.appendChild(colorPick);
-    row.appendChild(actions);
+    top.appendChild(left);
+    top.appendChild(right);
+
+    row.appendChild(top);
+
+    // expandable panel
+    const panel = document.createElement("div");
+    panel.className = "todoPanel";
+    panel.classList.toggle("hide", openTodoId !== t.id);
+
+    panel.innerHTML = `
+      <div class="row">
+        <label class="field" style="min-width:220px;flex:1;">
+          <span>Time used</span>
+          <div class="row tight">
+            <input class="hInput" type="number" min="0" value="0" />
+            <span class="muted">hour</span>
+            <input class="mInput" type="number" min="0" max="59" value="15" />
+            <span class="muted">min</span>
+          </div>
+        </label>
+
+        <button class="logBtn">✅ Upload</button>
+      </div>
+
+      <label class="field">
+        <span>Description</span>
+        <textarea class="dInput" rows="3" placeholder="What did you do?"></textarea>
+      </label>
+
+      <p class="muted logStatus"></p>
+    `;
+
+    // hook panel controls
+    const hEl = panel.querySelector(".hInput");
+    const mEl = panel.querySelector(".mInput");
+    const dEl = panel.querySelector(".dInput");
+    const statusEl = panel.querySelector(".logStatus");
+    const btn = panel.querySelector(".logBtn");
+
+    // Enter behavior inside textarea: keep normal typing; Upload is button only
+    btn.addEventListener("click", async ()=>{
+      try{
+        await logEntryForTodo(t.id, hEl, mEl, dEl, statusEl);
+      }catch(e){
+        statusEl.textContent = `Error: ${e.message}`;
+      }
+    });
+
+    row.appendChild(panel);
     listEl.appendChild(row);
   }
 }
 
-/* -------------------- Log entry -------------------- */
-function minutesFromInputs(){
-  const h = Math.max(0, Number($("hoursInput").value || 0));
-  const m = Math.max(0, Number($("minsInput").value || 0));
-  return h * 60 + m;
-}
-
-async function logEntry(){
-  if (!groupCode) throw new Error("No group code.");
-  const minutes = minutesFromInputs();
-  if (minutes <= 0) throw new Error("Time must be > 0 min.");
-
-  const selected = $("taskSelect").value;
-  let todoId = null;
-  let subjectText = "";
-
-  if (selected === "__OTHER__"){
-    subjectText = ($("otherSubjectInput").value || "").trim();
-    if (!subjectText) throw new Error("Please type the custom subject (Other).");
-  } else if (selected && selected.startsWith("todo:")){
-    todoId = selected.slice(5);
-    subjectText = (todosMap[todoId]?.text) || "Task";
-  } else {
-    throw new Error("Please select a task (or Other).");
-  }
-
-  const desc = ($("descInput").value || "").trim();
-
-  await addDoc(collection(db, "groups", groupCode, "events"), {
-    memberId,
-    minutes,
-    todoId,
-    subjectText,
-    desc,
-    createdAt: serverTimestamp()
-  });
-
-  $("logStatus").textContent = `Logged ${minutes} min ✓`;
-  setTimeout(()=> $("logStatus").textContent="", 1200);
-}
-
-/* -------------------- Dropdown + legends -------------------- */
-function renderTaskSelect(){
-  const sel = $("taskSelect");
-  if (!sel) return;
-
-  const showDone = $("showDoneToggle")?.checked;
-  const tasks = todosList.filter(t => showDone ? true : !t.done);
-
-  const prev = sel.value;
-
-  sel.innerHTML = "";
-  const opt0 = document.createElement("option");
-  opt0.value = "";
-  opt0.textContent = "Select a task…";
-  sel.appendChild(opt0);
-
-  for (const t of tasks){
-    const opt = document.createElement("option");
-    opt.value = `todo:${t.id}`;
-    opt.textContent = t.text;
-    sel.appendChild(opt);
-  }
-
-  const optOther = document.createElement("option");
-  optOther.value = "__OTHER__";
-  optOther.textContent = "Other…";
-  sel.appendChild(optOther);
-
-  if ([...sel.options].some(o => o.value === prev)) sel.value = prev;
-  $("otherSubjectWrap").classList.toggle("hide", sel.value !== "__OTHER__");
-}
-
+/* -------------------- Task legend -------------------- */
 function renderTaskLegend(){
   const el = $("taskLegend");
   if (!el) return;
@@ -437,7 +450,7 @@ function renderTaskLegend(){
   }
 }
 
-/* -------------------- Aggregation + rendering -------------------- */
+/* -------------------- Aggregation + rendering (bar/pie unchanged) -------------------- */
 function recomputeAggregates(){
   totalsByMember = {};
   minutesByMemberTask = {};
@@ -476,7 +489,8 @@ function taskLabel(taskKey){
 function taskColor(taskKey){
   if (taskKey.startsWith("todo:")){
     const id = taskKey.slice(5);
-    return taskColorFromTodo(todosMap[id] || { id });
+    const todo = todosMap[id] || { id };
+    return taskColorFromTodo(todo);
   }
   return "#9CA3AF";
 }
@@ -491,7 +505,7 @@ function renderBarsStacked(){
   const maxTotal = Math.max(1, ...entries.map(([,mins])=>mins||0));
 
   for (const [mid, total] of entries){
-    const m = membersMap[mid] || { displayName:"Member", color:"#111" };
+    const m = membersMap[mid] || { displayName:"Member", color: memberColor(mid) };
     const isYou = mid === memberId;
 
     const taskMap = minutesByMemberTask[mid] || {};

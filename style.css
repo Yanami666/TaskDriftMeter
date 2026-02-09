@@ -136,3 +136,67 @@
     display:flex;
   }
   .seg{height:100%}
+  /* --- ADD THESE (or keep if already) --- */
+.todoItem{
+  cursor:pointer;
+}
+.todoItem:hover{
+  border-color:#cfcfcf;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.03);
+}
+.todoItem.selected{
+  outline: 2px solid rgba(37, 99, 235, 0.25);
+  border-color: rgba(37, 99, 235, 0.35);
+}
+.todoItem .todoText,
+.todoItem input[type="checkbox"],
+.todoItem select,
+.todoItem button{
+  cursor:auto;
+}
+/* --- todo item layout with panel --- */
+.todoItem{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:10px 12px;
+  display:grid;
+  gap:10px;
+}
+
+.todoTop{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.todoLeft{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex:1;
+  min-width:240px;
+}
+
+.todoRight{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.todoPanel{
+  background:#fafafa;
+  border:1px solid #eee;
+  border-radius:12px;
+  padding:12px;
+}
+
+.todoColorPick{
+  min-width:120px;
+  padding:8px 10px;
+  border-radius:10px;
+  border:1px solid #ddd;
+  background:#fff;
+}

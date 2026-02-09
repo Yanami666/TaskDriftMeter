@@ -19,22 +19,20 @@
         <div class="pill mono">Group: <span id="groupLabel">—</span></div>
 
         <div class="row rightTools">
-          <button id="todoToggleBtn" class="ghost">To Do List</button>
           <button id="backBtn" class="ghost">← Back</button>
         </div>
       </div>
       <p id="appStatus" class="muted"></p>
     </section>
 
-    <!-- TODO MODULE (hidden by default) -->
-    <section id="todoCard" class="card hide">
+    <!-- TODO MODULE (ALWAYS VISIBLE) -->
+    <section id="todoCard" class="card">
       <h2>To Do List (shared)</h2>
 
       <div class="row">
         <label class="field" style="min-width:260px;flex:2;">
           <span>Type a task</span>
-          <textarea id="todoAddInput" rows="2"
-            placeholder="type your task"></textarea>
+          <textarea id="todoAddInput" rows="2" placeholder="type your task"></textarea>
         </label>
 
         <label class="field" style="min-width:160px;flex:0;">
@@ -55,45 +53,10 @@
         </label>
       </div>
 
+      <div class="muted small">Tip: click “Log time” on a task to expand its timer.</div>
+
       <div id="todoList" class="todoList"></div>
       <p id="todoStatus" class="muted small"></p>
-    </section>
-
-    <section class="card">
-      <h2>Working time</h2>
-
-      <div class="row">
-        <label class="field">
-          <span>Time used</span>
-          <div class="row tight">
-            <input id="hoursInput" type="number" min="0" value="0" />
-            <span class="muted">hour</span>
-            <input id="minsInput" type="number" min="0" max="59" value="15" />
-            <span class="muted">min</span>
-          </div>
-        </label>
-
-        <label class="field">
-          <span>Task</span>
-          <select id="taskSelect"></select>
-        </label>
-      </div>
-
-      <label id="otherSubjectWrap" class="field hide">
-        <span>Other</span>
-        <input id="otherSubjectInput" placeholder="other work not mentioned" />
-      </label>
-
-      <label class="field">
-        <span>Description</span>
-        <textarea id="descInput" rows="3" placeholder="What did you do?"></textarea>
-      </label>
-
-      <div class="row">
-        <button id="logBtn">✅ Upload</button>
-      </div>
-
-      <p id="logStatus" class="muted"></p>
     </section>
 
     <section class="card">
