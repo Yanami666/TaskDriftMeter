@@ -3,42 +3,107 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <link rel="stylesheet" href="./style.css" />
   <title>Welcome</title>
+  <link rel="stylesheet" href="./style.css" />
+  <style>
+    .pageTitleFigma{ top:8px; left:8px; }
+
+    .wrap{
+      margin-top:6px;
+      height: calc(100% - 38px);
+      display:flex;
+      flex-direction:column;
+    }
+
+    .hero{
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+      text-align:center;
+      padding:0 20px;
+      gap:16px;
+    }
+
+    .logoCircle{
+      width:120px;
+      height:120px;
+      border-radius:999px;
+      background:#fff;
+      border:1.5px solid #222;
+      display:grid;
+      place-items:center;
+      font-size:14px;
+      font-weight:900;
+      line-height:1.1;
+    }
+
+    .heroTitle{
+      font-size:22px;
+      font-weight:900;
+      line-height:1.15;
+    }
+
+    .heroSub{
+      font-size:12px;
+      color:#777;
+      line-height:1.45;
+      max-width:260px;
+    }
+
+    .bottomBtns{
+      padding-bottom:10px;
+    }
+
+    .skipTop{
+      position:absolute;
+      right:16px;
+      top:42px;
+      font-size:12px;
+      color:#888;
+      text-decoration:underline;
+      cursor:pointer;
+      background:none;
+      border:none;
+      padding:0;
+    }
+  </style>
 </head>
 <body>
   <div class="centerWrap">
     <div class="phone">
+
       <div class="statusbar">
         <div>9:41</div>
         <div>📶 WiFi 🔋</div>
       </div>
 
-      <div class="centerHero">
-        <div class="heroSquare"></div>
-        <div style="font-weight:800;">Welcome to</div>
-        <div class="hrLines">
-          <div></div>
-          <div style="width:180px;"></div>
-        </div>
-      </div>
+      <button id="btnSkip" class="skipTop" type="button">skip</button>
 
-      <div class="stack">
-        <button class="btn btnDark" id="btnGetStarted">Get started</button>
-        <button class="btn btnLight" id="btnSignIn">Sign In</button>
-        <button class="btn btnGhost" id="btnSkip">Skip</button>
+      <div class="wrap">
+        <div class="hero">
+          <div class="logoCircle">GROUP<br>WORK<br>METER</div>
+          <div class="heroTitle">Track the work.<br>See the effort.</div>
+          <div class="heroSub">
+            Demo prototype for group contribution tracking.
+          </div>
+        </div>
+
+        <div class="bottomBtns">
+          <button id="btnGetStarted" class="btn btnDark" type="button">Get Started</button>
+        </div>
       </div>
     </div>
   </div>
 
   <script src="./state.js"></script>
   <script>
-    document.getElementById("btnGetStarted").onclick = () => location.href = "./signup.html";
-    document.getElementById("btnSignIn").onclick = () => location.href = "./signin.html";
+    document.getElementById("btnGetStarted").onclick = () => {
+      location.href = "./signin.html";
+    };
 
     document.getElementById("btnSkip").onclick = () => {
-      const u = AppState.loadUser();
-      AppState.saveUser({ lastAuthMode: "skip", email: u.email || "" });
       location.href = "./dashboard.html";
     };
   </script>

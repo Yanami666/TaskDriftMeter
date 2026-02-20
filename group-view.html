@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Group View</title>
+  <link rel="stylesheet" href="./style.css" />
+  <style>
+    .pageTitleFigma{ top:8px; left:8px; }
+
+    .wrap{
+      margin-top:6px;
+      height: calc(100% - 38px);
+      display:flex;
+      flex-direction:column;
+    }
+
+    .headerRow{
+      display:grid;
+      grid-template-columns: 28px 1fr 28px;
+      gap:8px;
+      align-items:center;
+    }
+
+    .ghostBtn{
+      width:28px;height:28px;border:1.5px solid #222;border-radius:8px;background:#fff;cursor:pointer;
+    }
+
+    .headerTitle{
+      text-align:center;
+      font-weight:800;
+      font-size:13px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .main{
+      flex:1;
+      min-height:0;
+      display:flex;
+      flex-direction:column;
+      padding-bottom:44px; /* tab bar */
+      position:relative;
+    }
+
+    .tinyTitle{
+      font-size:9px;
+      font-weight:800;
+      color:#666;
+      margin-bottom:6px;
+    }
+
+    .overviewCard{
+      border:1.5px solid #222;
+      border-radius:8px;
+      background:#fff;
+      padding:10px;
+    }
+
+    .ringBox{
+      min-height:72px;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+    }
+
+    .recentArea{
+      margin-top:10px;
+      flex:1;
+      min-height:0;
+      overflow:auto;
+    }
+
+    .recentRow{
+      display:grid;
+      grid-template-columns: 20px 1fr 28px;
+      gap:8px;
+      align-items:center;
+      padding:6px 0;
+      border-bottom:1px solid #f0f0f0;
+    }
+
+    .memberDot{
+      width:18px;height:18px;border-radius:999px;border:1px solid #222;
+      display:grid;place-items:center;font-size:9px;font-weight:800;overflow:hidden;background:#fff;
+    }
+    .memberDot img{ width:100%; height:100%; object-fit:cover; }
+
+    .barTrack{
+      height:6px; background:#ddd; border-radius:999px; overflow:hidden; position:relative;
+    }
+    .barFill{
+      position:absolute; inset:0 auto 0 0; width:50%;
+      background:#666; border-radius:999px;
+    }
+    .barSub{
+      margin-top:3px; font-size:9px; color:#888;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .minsText{
+      font-size:9px; color:#999; text-align:right;
+    }
+
+    .fab{
+      position:absolute;
+      right:10px;
+      bottom:56px;
+      width:32px; height:32px;
+      border-radius:999px;
+      border:1.5px solid #000;
+      background:#000; color:#fff;
+      font-size:20px; line-height:1;
+      display:grid; place-items:center;
+      cursor:pointer;
+      z-index:9;
+    }
+
+    /* modal */
+    .modalMask{
+      position:absolute; inset:0;
+      background:rgba(0,0,0,.22);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:50;
+    }
+
+    .modalCard{
+      width:84%;
+      border:1.5px solid #222;
+      border-radius:12px;
+      background:#fff;
+      padding:12px;
+    }
+
+    .modalHead{
+      position:relative;
+      text-align:center;
+      font-size:11px;
+      font-weight:800;
+      margin-bottom:10px;
+    }
+
+    .closeBtn{
+      position:absolute;
+      right:-2px; top:-2px;
+      width:18px; height:18px;
+      border-radius:999px;
+      border:1px solid #222;
+      background:#fff;
+      font-size:10px;
+      cursor:pointer;
+      display:grid; place-items:center;
+    }
+
+    .field{ margin-bottom:8px; }
+    .field label{
+      display:block;
+      font-size:8px;
+      font-weight:700;
+      margin-bottom:3px;
+      color:#444;
+    }
+
+    .select{
+      width:100%;
+      height:24px;
+      border:1px solid #222;
+      border-radius:3px;
+      padding:0 6px;
+      font-size:10px;
+      background:#fff;
+    }
+
+    .smallInput{
+      width:100%;
+      height:24px;
+      border:1px solid #222;
+      border-radius:3px;
+      padding:0 6px;
+      font-size:10px;
+      background:#fff;
+    }
+
+    .photoPick{
+      border:1px solid #222;
+      border-radius:3px;
+      height:44px;
+      display:grid;
+      grid-template-columns:44px 1fr;
+      overflow:hidden;
+      cursor:pointer;
+      background:#fff;
+    }
+    .photoPreview{
+      border-right:1px dashed #888;
+      display:grid; place-items:center;
+      font-size:8px; color:#bbb;
+      background:#fafafa; overflow:hidden;
+    }
+    .photoPreview img{ width:100%; height:100%; object-fit:cover; }
+    .photoLabel{
+      display:flex; align-items:center;
+      padding:0 8px;
+      color:#aaa; font-size:9px;
+    }
+
+    .starsLine{
+      height:22px;
+      border:1px solid #222;
+      border-radius:3px;
+      display:flex;
+      align-items:center;
+      gap:2px;
+      padding:0 6px;
+      font-size:10px;
+    }
+    .starBtn{
+      border:none; background:transparent; cursor:pointer;
+      padding:0; font-size:10px; opacity:.25;
+    }
+    .starBtn.on{ opacity:1; }
+
+    .timeRow{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:4px;
+    }
+
+    .modalBtns{
+      display:grid;
+      gap:6px;
+      margin-top:8px;
+    }
+
+    .modalBtn{
+      height:24px;
+      border-radius:4px;
+      border:1px solid #222;
+      font-size:10px;
+      font-weight:700;
+      cursor:pointer;
+      background:#fff;
+    }
+    .modalBtn.dark{
+      background:#666; border-color:#666; color:#fff;
+    }
+
+    .hint{
+      margin-top:6px;
+      min-height:12px;
+      font-size:9px;
+      color:#b00020;
+    }
+  </style>
+</head>
+<body>
+  <div class="centerWrap">
+    <div class="phone">
+
+      <div class="wrap">
+        <div class="statusbar">
+          <div>9:41</div>
+          <div>📶 WiFi 🔋</div>
+        </div>
+
+        <div class="headerRow">
+          <button id="btnBack" class="ghostBtn" type="button"></button>
+          <div id="groupTitle" class="headerTitle">CS 101 Project</div>
+          <div id="btnProfile" class="topIconAvatar"></div>
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="main">
+          <div>
+            <div class="tinyTitle">CONTRIBUTION OVERVIEW</div>
+            <div class="overviewCard">
+              <div class="ringBox">
+                <canvas id="overviewCanvas" width="150" height="60"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <div class="recentArea">
+            <div class="tinyTitle" style="margin-top:10px;">RECENT ACTIVITY</div>
+            <div id="recentList"></div>
+          </div>
+
+          <button id="btnFab" class="fab" type="button">+</button>
+        </div>
+      </div>
+
+      <div class="tabBar">
+        <button id="tabGroup" class="tabBtn active" type="button" title="Group View"></button>
+        <button id="tabDash" class="tabBtn" type="button" title="Dashboard"></button>
+        <button id="tabTime" class="tabBtn" type="button" title="Time Tracking"></button>
+      </div>
+
+      <!-- Log Work Modal -->
+      <div id="modalMask" class="modalMask">
+        <div class="modalCard">
+          <div class="modalHead">
+            Log Your Work
+            <button id="btnCloseModal" class="closeBtn" type="button">×</button>
+          </div>
+
+          <div class="field">
+            <label>Select your task</label>
+            <select id="taskSelect" class="select">
+              <option value="">Select</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Or add new task</label>
+            <input id="newTaskInput" class="smallInput" placeholder="Task name">
+          </div>
+
+          <div class="field">
+            <label>Add photo</label>
+            <div id="photoPick" class="photoPick">
+              <div id="photoPreview" class="photoPreview">Add photo</div>
+              <div class="photoLabel">Tap to upload / camera</div>
+            </div>
+            <input id="photoInput" type="file" accept="image/*" capture="environment" style="display:none;">
+          </div>
+
+          <div class="field">
+            <label>Type</label>
+            <div id="starsLine" class="starsLine"></div>
+          </div>
+
+          <div class="field">
+            <label>Time</label>
+            <div class="timeRow">
+              <input id="hoursInput" class="smallInput" type="number" min="0" placeholder="hour">
+              <input id="minsInput" class="smallInput" type="number" min="0" max="59" placeholder="minute">
+            </div>
+          </div>
+
+          <div class="modalBtns">
+            <button id="btnSubmit" class="modalBtn dark" type="button">Submit</button>
+            <button id="btnCancel" class="modalBtn" type="button">Cancel</button>
+          </div>
+
+          <div id="hintMsg" class="hint"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="./state.js"></script>
+  <script src="./group-view.js"></script>
+</body>
+</html>

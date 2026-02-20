@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Time Tracking</title>
+  <link rel="stylesheet" href="./style.css" />
+  <style>
+    .pageTitleFigma{ top:8px; left:8px; }
+
+    .wrap{
+      margin-top:6px;
+      height: calc(100% - 38px);
+      display:flex;
+      flex-direction:column;
+    }
+
+    .headerRow{
+      display:grid;
+      grid-template-columns: 28px 1fr 28px;
+      gap:8px;
+      align-items:center;
+    }
+    .ghostBtn{
+      width:28px;height:28px;border:1.5px solid #222;border-radius:8px;background:#fff;cursor:pointer;
+    }
+    .headerTitle{
+      text-align:center;
+      font-weight:800;
+      font-size:13px;
+    }
+
+    .main{
+      flex:1;
+      min-height:0;
+      display:flex;
+      flex-direction:column;
+      padding-bottom:44px;
+    }
+
+    .totalCard{
+      border:1.5px solid #222;
+      border-radius:8px;
+      background:#fff;
+      min-height:96px;
+      display:grid;
+      place-items:center;
+    }
+
+    .mutedSmall{
+      font-size:9px;
+      color:#b8b8b8;
+      font-weight:800;
+      text-align:center;
+    }
+
+    .totalBig{
+      margin-top:4px;
+      font-size:34px;
+      line-height:1;
+      font-weight:900;
+      text-align:center;
+    }
+
+    .secTitle{
+      margin-top:12px;
+      font-size:10px;
+      font-weight:800;
+    }
+
+    .ringWrap{
+      display:flex;
+      justify-content:center;
+      margin:8px 0 8px;
+    }
+
+    .taskBox{
+      border:1.5px solid #222;
+      border-radius:8px;
+      background:#fff;
+      padding:8px;
+      flex:1;
+      min-height:0;
+      overflow:auto;
+    }
+
+    .taskRow{
+      display:grid;
+      grid-template-columns: 16px 1fr 32px;
+      gap:8px;
+      align-items:center;
+      padding:6px 0;
+      border-bottom:1px solid #f0f0f0;
+    }
+    .taskRow:last-child{ border-bottom:none; }
+
+    .check{
+      width:12px;height:12px;border:1px solid #222;border-radius:3px;
+      background:#fff; cursor:pointer; display:grid; place-items:center;
+      font-size:8px; line-height:1; padding:0;
+    }
+    .check.on{
+      background:#666;
+      border-color:#666;
+      color:#fff;
+    }
+
+    .taskTrack{
+      height:6px;background:#ddd;border-radius:999px;overflow:hidden;position:relative;
+    }
+    .taskFill{
+      position:absolute;left:0;top:0;bottom:0;
+      background:#666;border-radius:999px;
+    }
+    .taskName{
+      margin-top:3px;font-size:9px;color:#888;
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    }
+    .minsText{
+      text-align:right;font-size:9px;color:#aaa;
+    }
+  </style>
+</head>
+<body>
+  <div class="centerWrap">
+    <div class="phone">
+
+      <div class="wrap">
+        <div class="statusbar">
+          <div>9:41</div>
+          <div>📶 WiFi 🔋</div>
+        </div>
+
+        <div class="headerRow">
+          <button id="btnGroup" class="ghostBtn" type="button"></button>
+          <div class="headerTitle">Your Time</div>
+          <div id="btnProfile" class="topIconAvatar"></div>
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="main">
+          <div class="totalCard">
+            <div>
+              <div class="mutedSmall">TOTAL TIME</div>
+              <div id="totalBig" class="totalBig">0h</div>
+            </div>
+          </div>
+
+          <div class="secTitle">BREAKDOWN</div>
+
+          <div class="ringWrap">
+            <canvas id="ringCanvas" width="140" height="140"></canvas>
+          </div>
+
+          <div id="taskBox" class="taskBox"></div>
+        </div>
+      </div>
+
+      <div class="tabBar">
+        <button id="tabGroup" class="tabBtn" type="button" title="Group View"></button>
+        <button id="tabDash" class="tabBtn" type="button" title="Dashboard"></button>
+        <button id="tabTime" class="tabBtn active" type="button" title="Time Tracking"></button>
+      </div>
+    </div>
+  </div>
+
+  <script src="./state.js"></script>
+  <script src="./time-tracking.js"></script>
+</body>
+</html>

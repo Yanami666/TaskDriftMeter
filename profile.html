@@ -3,131 +3,238 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Profile</title>
   <link rel="stylesheet" href="./style.css" />
-  <title>Personal Profile</title>
+  <style>
+    .pageTitleFigma{ top:8px; left:8px; }
+
+    .profileWrap{
+      margin-top: 6px;
+      height: calc(100% - 38px);
+      display:flex;
+      flex-direction:column;
+    }
+
+    .headerRow{
+      display:grid;
+      grid-template-columns: 28px 1fr 28px;
+      align-items:center;
+      gap:8px;
+    }
+
+    .ghostBtn{
+      width:28px;height:28px;border:1.5px solid #222;border-radius:8px;background:#fff;cursor:pointer;
+    }
+
+    .headerTitle{
+      text-align:center;
+      font-weight:800;
+      font-size:13px;
+    }
+
+    .bodyScroll{
+      margin-top: 10px;
+      flex:1;
+      overflow:auto;
+      padding-bottom: 12px;
+    }
+
+    .uploadCircle{
+      width:156px;
+      height:156px;
+      border-radius:999px;
+      background:#d9d9d9;
+      margin:10px auto 0;
+      display:grid;
+      place-items:center;
+      text-align:center;
+      font-weight:800;
+      cursor:pointer;
+      overflow:hidden;
+      border: none;
+      color:#111;
+      padding: 8px;
+    }
+
+    .uploadCircle img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
+
+    .panelInput{
+      width:100%;
+      height:52px;
+      border:1.5px solid #222;
+      border-radius:10px;
+      background:#fff;
+      padding:0 14px;
+      font-size:15px;
+      display:flex;
+      align-items:center;
+      margin-top:10px;
+    }
+
+    .panelInput input{
+      width:100%;
+      border:none;
+      outline:none;
+      font-size:15px;
+      background:transparent;
+    }
+
+    .contactBtn{
+      width:100px;
+      height:32px;
+      border-radius:20px;
+      border:1.5px solid #222;
+      background:#fff;
+      font-weight:700;
+      cursor:pointer;
+      margin-top: 22px;
+    }
+
+    .saveMsg{
+      font-size:11px;
+      color:#888;
+      margin-top:8px;
+      min-height:14px;
+    }
+  </style>
 </head>
 <body>
   <div class="centerWrap">
     <div class="phone">
-      <div class="statusbar">
-        <div>9:41</div>
-        <div>📶 WiFi 🔋</div>
+
+      <div class="profileWrap">
+        <div class="statusbar">
+          <div>9:41</div>
+          <div>📶 WiFi 🔋</div>
+        </div>
+
+        <div class="headerRow">
+          <button id="btnBack" class="ghostBtn" type="button" title="Back"></button>
+          <div class="headerTitle">New Group</div>
+          <div id="topAvatar" class="topIconAvatar" title="Profile"></div>
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="bodyScroll">
+          <div style="font-size:10px;font-weight:800;margin-bottom:6px;">Profile Picture</div>
+
+          <button id="uploadBtn" class="uploadCircle" type="button">Upload Picture</button>
+          <input id="fileInput" type="file" accept="image/*" capture="environment" style="display:none;">
+
+          <div style="font-size:10px;font-weight:800;margin-top:14px;">Personal</div>
+
+          <div class="panelInput">
+            <input id="usernameInput" type="text" placeholder="User Name" />
+          </div>
+
+          <div id="userIdBox" class="panelInput" style="font-weight:800;">USER ID: xxxxxx</div>
+          <div id="emailBox" class="panelInput" style="font-weight:700;color:#111;">User Email</div>
+
+          <div class="saveMsg" id="saveMsg"></div>
+
+          <button class="contactBtn" type="button">Contact Us</button>
+        </div>
       </div>
-
-      <div class="topRow">
-        <div style="width:34px;"></div>
-        <div style="font-size:18px;font-weight:900;">New Group</div>
-        <!-- back button also shows avatar style but behaves as back -->
-        <div id="btnBack" class="topIconAvatar" title="Back"></div>
-      </div>
-
-      <div class="muted small" style="font-weight:900;margin-top:6px;">Profile Picture</div>
-
-      <div class="uploadCircle" id="uploadCircle">
-        <span id="uploadText">Upload Picture</span>
-        <img id="previewImg" alt="" style="display:none;">
-      </div>
-
-      <input class="hiddenInput" id="fileInput" type="file" accept="image/*"/>
-
-      <div class="muted small" style="font-weight:900;margin-top:6px;">Personal</div>
-
-      <div class="field">
-        <input id="username" placeholder="User Name" />
-      </div>
-
-      <div class="field">
-        <input id="userId" disabled />
-      </div>
-
-      <div class="field">
-        <input id="userEmail" disabled />
-      </div>
-
-      <button class="contactBtn" id="btnContact">Contact Us</button>
-
-      <div class="msg" id="msg"></div>
     </div>
   </div>
 
   <script src="./state.js"></script>
   <script>
-    const uploadCircle = document.getElementById("uploadCircle");
-    const fileInput = document.getElementById("fileInput");
-    const previewImg = document.getElementById("previewImg");
-    const uploadText = document.getElementById("uploadText");
-
-    const username = document.getElementById("username");
-    const userId = document.getElementById("userId");
-    const userEmail = document.getElementById("userEmail");
-    const msg = document.getElementById("msg");
-
     const btnBack = document.getElementById("btnBack");
+    const topAvatar = document.getElementById("topAvatar");
+    const uploadBtn = document.getElementById("uploadBtn");
+    const fileInput = document.getElementById("fileInput");
+    const usernameInput = document.getElementById("usernameInput");
+    const userIdBox = document.getElementById("userIdBox");
+    const emailBox = document.getElementById("emailBox");
+    const saveMsg = document.getElementById("saveMsg");
 
-    function render(){
+    function render() {
       const user = AppState.loadUser();
 
-      // back icon reflects current photo/initial
-      AppState.applyTopRightAvatar(btnBack);
+      AppState.applyTopRightAvatar(topAvatar);
 
-      username.value = user.username || "";
-      userId.value = "USER ID: " + (user.userId || "");
-      userEmail.value = user.email ? ("User Email: " + user.email) : "User Email";
+      usernameInput.value = user.username || "";
+      userIdBox.textContent = "USER ID: " + (user.userId || "xxxxxx");
+      emailBox.textContent = user.email || "User Email";
 
-      if (user.photoDataUrl){
-        previewImg.src = user.photoDataUrl;
-        previewImg.style.display = "block";
-        uploadText.style.display = "none";
+      if (user.photoDataUrl) {
+        uploadBtn.innerHTML = '<img src="' + user.photoDataUrl + '" alt="">';
       } else {
-        previewImg.style.display = "none";
-        uploadText.style.display = "block";
+        uploadBtn.textContent = "Upload Picture";
       }
     }
 
-    btnBack.onclick = () => location.href = "./dashboard.html";
+    function compressImage(dataUrl) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+          const maxW = 900;
+          let w = img.width;
+          let h = img.height;
+          if (w > maxW) {
+            const ratio = maxW / w;
+            w = Math.round(w * ratio);
+            h = Math.round(h * ratio);
+          }
+          const c = document.createElement("canvas");
+          c.width = w;
+          c.height = h;
+          const ctx = c.getContext("2d");
+          ctx.drawImage(img, 0, 0, w, h);
+          resolve(c.toDataURL("image/jpeg", 0.72));
+        };
+        img.onerror = reject;
+        img.src = dataUrl;
+      });
+    }
 
-    uploadCircle.onclick = () => fileInput.click();
+    function saveNow(msg = "Saved") {
+      AppState.updateCurrentUserInAllGroups();
+      render();
+      saveMsg.textContent = msg;
+      setTimeout(() => {
+        if (saveMsg.textContent === msg) saveMsg.textContent = "";
+      }, 1200);
+    }
 
-    fileInput.onchange = () => {
-      const f = fileInput.files && fileInput.files[0];
-      if (!f) return;
-
-      const reader = new FileReader();
-      reader.onload = () => {
-        const dataUrl = String(reader.result || "");
-        AppState.updateUserPhotoEverywhere(dataUrl);
-        msg.textContent = "Saved.";
-        msg.style.color = "#0a7a2f";
-        setTimeout(()=>{ msg.textContent=""; msg.style.color="#b00020"; }, 900);
-        render();
-      };
-      reader.readAsDataURL(f);
+    btnBack.onclick = () => {
+      history.length > 1 ? history.back() : (location.href = "./dashboard.html");
     };
 
-    function saveName(){
-      const name = username.value.trim();
-      if (!name){
-        msg.textContent = "Username cannot be empty.";
-        msg.style.color = "#b00020";
-        return;
-      }
-      AppState.updateUserNameEverywhere(name);
-      msg.textContent = "Saved.";
-      msg.style.color = "#0a7a2f";
-      setTimeout(()=>{ msg.textContent=""; msg.style.color="#b00020"; }, 900);
-      render();
-    }
+    uploadBtn.onclick = () => fileInput.click();
 
-    username.addEventListener("blur", saveName);
-    username.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        saveName();
-        username.blur();
-      }
+    fileInput.onchange = () => {
+      const file = fileInput.files && fileInput.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = async () => {
+        try {
+          const compressed = await compressImage(String(reader.result || ""));
+          AppState.saveUser({ photoDataUrl: compressed });
+          saveNow("Photo saved");
+        } catch (e) {
+          console.error(e);
+          saveMsg.textContent = "Image save failed";
+        }
+      };
+      reader.readAsDataURL(file);
+    };
+
+    usernameInput.addEventListener("change", () => {
+      AppState.saveUser({ username: usernameInput.value.trim() });
+      saveNow("Name saved");
     });
 
-    document.getElementById("btnContact").onclick = () => alert("Demo: Contact Us");
+    usernameInput.addEventListener("blur", () => {
+      AppState.saveUser({ username: usernameInput.value.trim() });
+      saveNow("Name saved");
+    });
 
     render();
   </script>

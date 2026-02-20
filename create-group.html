@@ -3,290 +3,152 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <link rel="stylesheet" href="./style.css" />
   <title>Create Group</title>
+  <link rel="stylesheet" href="./style.css" />
+  <style>
+    .pageTitleFigma{ top:8px; left:8px; }
+
+    .wrap{
+      margin-top:6px;
+      height: calc(100% - 38px);
+      display:flex;
+      flex-direction:column;
+    }
+
+    .headerRow{
+      display:grid;
+      grid-template-columns: 28px 1fr 28px;
+      gap:8px;
+      align-items:center;
+    }
+
+    .ghostBtn{
+      width:28px;height:28px;border:1.5px solid #222;border-radius:8px;background:#fff;cursor:pointer;
+    }
+
+    .headerTitle{
+      text-align:center;
+      font-weight:800;
+      font-size:13px;
+    }
+
+    .body{
+      margin-top:8px;
+      flex:1;
+      overflow:auto;
+      padding-bottom:12px;
+    }
+
+    .bannerBox{
+      width:100%;
+      height:140px;
+      border:1.5px solid #222;
+      border-radius:12px;
+      background:#f3f3f3;
+      display:grid;
+      place-items:center;
+      color:#c7c7c7;
+      font-weight:800;
+      cursor:pointer;
+      overflow:hidden;
+      text-align:center;
+      padding:8px;
+    }
+
+    .bannerBox img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
+
+    .inviteRow{
+      display:flex;
+      gap:8px;
+      margin-top:8px;
+    }
+
+    .chips{
+      margin-top:10px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+
+    .chip{
+      height:30px;
+      padding:0 12px;
+      border:1.5px solid #222;
+      border-radius:999px;
+      background:#fff;
+      display:flex;
+      align-items:center;
+      font-size:12px;
+      font-weight:700;
+      gap:6px;
+    }
+
+    .chip button{
+      border:none;
+      background:transparent;
+      cursor:pointer;
+      font-weight:900;
+      font-size:12px;
+      line-height:1;
+      padding:0;
+    }
+
+    .msg{
+      margin-top:8px;
+      font-size:11px;
+      min-height:14px;
+      color:#b00020;
+    }
+  </style>
 </head>
 <body>
   <div class="centerWrap">
     <div class="phone">
-      <div class="statusbar">
-        <div>9:41</div>
-        <div>📶 WiFi 🔋</div>
-      </div>
 
-      <div class="topRow">
-        <div style="width:34px;"></div>
-        <div style="font-size:18px;font-weight:900;">New Group</div>
-        <div id="btnBack" class="topIconAvatar" title="Back"></div>
-      </div>
-
-      <div class="card" style="margin-top:6px;">
-        <div class="small muted" style="font-weight:900;">BANNER</div>
-        <div style="height:12px;"></div>
-
-        <div id="bannerBox" class="bannerBox" aria-label="Upload banner">
-          <div id="bannerText" class="bannerHint">Upload banner</div>
-          <img id="bannerImg" alt="Banner preview" style="display:none;">
-        </div>
-        <input class="hiddenInput" id="bannerInput" type="file" accept="image/*">
-
-        <div style="height:18px;"></div>
-
-        <div class="small muted" style="font-weight:900;">GROUP DETAILS</div>
-
-        <div class="field">
-          <input id="gName" placeholder="Group Name" />
-        </div>
-        <div class="field">
-          <input id="gDesc" placeholder="Description (optional)" />
+      <div class="wrap">
+        <div class="statusbar">
+          <div>9:41</div>
+          <div>📶 WiFi 🔋</div>
         </div>
 
-        <div style="height:14px;"></div>
-
-        <div class="small muted" style="font-weight:900;">INVITE MEMBERS</div>
-
-        <div class="field">
-          <input id="inviteInput" placeholder="User ID or Email" />
+        <div class="headerRow">
+          <button id="btnBack" class="ghostBtn" type="button"></button>
+          <div class="headerTitle">New Group</div>
+          <div id="btnProfile" class="topIconAvatar"></div>
         </div>
 
-        <button type="button" class="btn btnLight" id="btnAddMember">+ Add Member</button>
+        <div class="hr"></div>
 
-        <div class="pillRow" id="pillRow"></div>
+        <div class="body">
+          <div class="sectionLabel">BANNER</div>
+          <button id="bannerBox" class="bannerBox" type="button">Upload banner</button>
+          <input id="bannerInput" type="file" accept="image/*" capture="environment" style="display:none;">
 
-        <div style="height:16px;"></div>
+          <div class="sectionLabel" style="margin-top:12px;">GROUP DETAILS</div>
+          <input id="groupName" class="input" placeholder="Group Name">
+          <div style="height:8px;"></div>
+          <textarea id="groupDesc" class="textarea" placeholder="Description (optional)"></textarea>
 
-        <button type="button" class="btn btnDark" id="btnCreate">Create Group</button>
-        <div class="msg" id="msg"></div>
+          <div class="sectionLabel" style="margin-top:12px;">INVITE MEMBERS</div>
+          <input id="memberInput" class="input" placeholder="User ID or Email">
+          <div style="height:8px;"></div>
+          <button id="btnAddMember" class="btn btnLight" type="button">+ Add Member</button>
+
+          <div id="chips" class="chips"></div>
+
+          <div style="height:10px;"></div>
+          <button id="btnCreateGroup" class="btn btnDark" type="button">Create Group</button>
+          <div id="msg" class="msg"></div>
+        </div>
       </div>
     </div>
   </div>
 
   <script src="./state.js"></script>
-  <script>
-    // -------------------------------
-    // Safe top-right avatar (compat)
-    // -------------------------------
-    const btnBack = document.getElementById("btnBack");
-    if (window.AppState) {
-      if (typeof AppState.applyTopRightAvatar === "function") {
-        AppState.applyTopRightAvatar(btnBack);
-      } else if (typeof AppState.applyTopIcon === "function") {
-        AppState.applyTopIcon(btnBack);
-      } else if (typeof AppState.loadUser === "function") {
-        const u = AppState.loadUser();
-        btnBack.textContent = (u.username || "G").trim().charAt(0).toUpperCase();
-        btnBack.style.display = "grid";
-        btnBack.style.placeItems = "center";
-        btnBack.style.fontWeight = "900";
-      }
-    }
-
-    btnBack.onclick = () => {
-      location.href = "./dashboard.html";
-    };
-
-    // -------------------------------
-    // Banner upload + preview + compression
-    // -------------------------------
-    const bannerBox = document.getElementById("bannerBox");
-    const bannerInput = document.getElementById("bannerInput");
-    const bannerText = document.getElementById("bannerText");
-    const bannerImg = document.getElementById("bannerImg");
-
-    let bannerDataUrl = ""; // compressed version for storage
-    let inviteTags = [];
-
-    bannerBox.addEventListener("click", () => {
-      bannerInput.click();
-    });
-
-    bannerInput.addEventListener("change", () => {
-      const f = bannerInput.files && bannerInput.files[0];
-      if (!f) return;
-
-      const reader = new FileReader();
-      reader.onload = () => {
-        const rawUrl = String(reader.result || "");
-
-        // 1) Preview uses original image (best visual quality)
-        bannerImg.src = rawUrl;
-        bannerImg.style.display = "block";
-        bannerText.style.display = "none";
-
-        // 2) Storage uses compressed image (avoid quota exceeded)
-        compressImage(rawUrl, 900, 0.72)
-          .then((compressedUrl) => {
-            bannerDataUrl = compressedUrl;
-            console.log("[Banner] compressed:", Math.round(compressedUrl.length / 1024), "KB");
-          })
-          .catch((err) => {
-            console.warn("[Banner] compression failed, use no banner", err);
-            bannerDataUrl = "";
-          });
-      };
-
-      reader.readAsDataURL(f);
-    });
-
-    function compressImage(dataUrl, maxWidth = 900, quality = 0.72) {
-      return new Promise((resolve, reject) => {
-        const img = new Image();
-
-        img.onload = () => {
-          let width = img.width;
-          let height = img.height;
-
-          if (width > maxWidth) {
-            const ratio = maxWidth / width;
-            width = Math.round(width * ratio);
-            height = Math.round(height * ratio);
-          }
-
-          const canvas = document.createElement("canvas");
-          canvas.width = width;
-          canvas.height = height;
-
-          const ctx = canvas.getContext("2d");
-          if (!ctx) {
-            reject(new Error("Canvas context unavailable"));
-            return;
-          }
-
-          ctx.drawImage(img, 0, 0, width, height);
-
-          // JPEG is usually much smaller than PNG for photo/paint images
-          const compressed = canvas.toDataURL("image/jpeg", quality);
-          resolve(compressed);
-        };
-
-        img.onerror = reject;
-        img.src = dataUrl;
-      });
-    }
-
-    // -------------------------------
-    // Invite pills
-    // -------------------------------
-    const inviteInput = document.getElementById("inviteInput");
-    const pillRow = document.getElementById("pillRow");
-    const btnAddMember = document.getElementById("btnAddMember");
-
-    function renderPills() {
-      pillRow.innerHTML = "";
-
-      inviteTags.forEach((tag, i) => {
-        const pill = document.createElement("div");
-        pill.className = "pill";
-        pill.textContent = `${tag} ×`;
-        pill.style.cursor = "pointer";
-        pill.title = "Remove";
-        pill.onclick = () => {
-          inviteTags.splice(i, 1);
-          renderPills();
-        };
-        pillRow.appendChild(pill);
-      });
-    }
-
-    btnAddMember.addEventListener("click", () => {
-      const value = inviteInput.value.trim();
-      if (!value) return;
-
-      inviteTags.push(value);
-      inviteInput.value = "";
-      renderPills();
-    });
-
-    inviteInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        btnAddMember.click();
-      }
-    });
-
-    // -------------------------------
-    // Create group
-    // -------------------------------
-    const gName = document.getElementById("gName");
-    const gDesc = document.getElementById("gDesc");
-    const btnCreate = document.getElementById("btnCreate");
-    const msg = document.getElementById("msg");
-
-    btnCreate.addEventListener("click", async () => {
-      try {
-        console.log("[CreateGroup] Clicked");
-
-        const name = gName.value.trim();
-        const desc = gDesc.value.trim();
-
-        if (!name) {
-          msg.textContent = "Group name is required.";
-          msg.style.color = "#b00020";
-          return;
-        }
-
-        if (!window.AppState || typeof AppState.createGroup !== "function") {
-          msg.textContent = "AppState.createGroup is missing. Check state.js.";
-          msg.style.color = "#b00020";
-          console.error("[CreateGroup] AppState missing or createGroup missing", window.AppState);
-          return;
-        }
-
-        let group;
-
-        // First try: with compressed banner
-        try {
-          group = AppState.createGroup({
-            name,
-            desc,
-            bannerDataUrl,
-            inviteTags
-          });
-        } catch (err) {
-          // If storage quota still exceeds, retry without banner
-          console.warn("[CreateGroup] retry without banner due to error:", err);
-          group = AppState.createGroup({
-            name,
-            desc,
-            bannerDataUrl: "",
-            inviteTags
-          });
-        }
-
-        console.log("[CreateGroup] Created:", group);
-
-        msg.style.color = "#0a7a2f";
-        msg.innerHTML = `
-          Created! Group Code: <b>${group.id}</b>
-          <button id="btnCopyCode" type="button" style="margin-left:10px;border:2px solid #222;border-radius:999px;padding:6px 10px;background:#fff;font-weight:800;cursor:pointer;">
-            Copy
-          </button>
-          <div class="small muted" style="margin-top:8px;">Redirecting to dashboard…</div>
-        `;
-
-        const btnCopyCode = document.getElementById("btnCopyCode");
-        if (btnCopyCode) {
-          btnCopyCode.onclick = async () => {
-            try {
-              await navigator.clipboard.writeText(group.id);
-              btnCopyCode.textContent = "Copied";
-              setTimeout(() => { btnCopyCode.textContent = "Copy"; }, 700);
-            } catch (e) {
-              console.warn("Clipboard copy failed", e);
-            }
-          };
-        }
-
-        setTimeout(() => {
-          location.href = "./dashboard.html";
-        }, 700);
-
-      } catch (err) {
-        console.error("[CreateGroup] ERROR:", err);
-        msg.textContent = "Create failed. Open console and send me the red error.";
-        msg.style.color = "#b00020";
-      }
-    });
-  </script>
+  <script src="./create-group.js"></script>
 </body>
 </html>

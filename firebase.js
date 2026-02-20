@@ -1,10 +1,16 @@
-// firebase.js
-// Realtime prototype setup (CDN module style)
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+import {
+  getFirestore
+} from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+import {
+  getAuth,
+  GoogleAuthProvider
+} from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+import {
+  getStorage
+} from "https://www.gstatic.com/firebasejs/12.9.0/firebase-storage.js";
 
-// Your Firebase web app config (from Firebase Console)
+// Your Firebase web app config
 const firebaseConfig = {
   apiKey: "AIzaSyBsz7HyQn5NvFm4euWi3CKKv7CQWVHDXYU",
   authDomain: "group-work-meter.firebaseapp.com",
@@ -14,11 +20,10 @@ const firebaseConfig = {
   appId: "1:474010642998:web:8db25bc9a81f4e1db3c697"
 };
 
-// Initialize Firebase
 export const app = initializeApp(firebaseConfig);
-
-// Firestore (realtime database)
 export const db = getFirestore(app);
+export const auth = getAuth(app);
+export const googleProvider = new GoogleAuthProvider();
+export const storage = getStorage(app);
 
-// (Optional) export config if you want it elsewhere later
 export { firebaseConfig };
