@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="./style.css" />
+  <title>Personal Profile</title>
+</head>
+<body>
+  <div class="centerWrap">
+    <div class="phone">
+      <div class="statusbar">
+        <div>9:41</div>
+        <div>📶 WiFi 🔋</div>
+      </div>
+
+      <div class="topRow">
+        <div style="width:34px;"></div>
+        <div style="font-size:18px;font-weight:900;">New Group</div>
+        <!-- back button also shows avatar style but behaves as back -->
+        <div id="btnBack" class="topIconAvatar" title="Back"></div>
+      </div>
+
+      <div class="muted small" style="font-weight:900;margin-top:6px;">Profile Picture</div>
+
+      <div class="uploadCircle" id="uploadCircle">
+        <span id="uploadText">Upload Picture</span>
+        <img id="previewImg" alt="" style="display:none;">
+      </div>
+
+      <input class="hiddenInput" id="fileInput" type="file" accept="image/*"/>
+
+      <div class="muted small" style="font-weight:900;margin-top:6px;">Personal</div>
+
+      <div class="field">
+        <input id="username" placeholder="User Name" />
+      </div>
+
+      <div class="field">
+        <input id="userId" disabled />
+      </div>
+
+      <div class="field">
+        <input id="userEmail" disabled />
+      </div>
+
+      <button class="contactBtn" id="btnContact">Contact Us</button>
+
+      <div class="msg" id="msg"></div>
+    </div>
+  </div>
+
+  <script src="./state.js"></script>
+  <script>
+    const uploadCircle = document.getElementById("uploadCircle");
+    const fileInput = document.getElementById("fileInput");
+    const previewImg = document.getElementById("previewImg");
+    const uploadText = document.getElementById("uploadText");
+
+    const username = document.getElementById("username");
+    const userId = document.getElementById("userId");
+    const userEmail = document.getElementById("userEmail");
+    const msg = document.getElementById("msg");
+
+    const btnBack = document.getElementById("btnBack");
+
+    function render(){
+      const user = AppState.loadUser();
+
+      // back icon reflects current photo/initial
+      AppState.applyTopRightAvatar(btnBack);
+
+      username.value = user.username || "";
+      userId.value = "USER ID: " + (user.userId || "");
+      userEmail.value = user.email ? ("User Email: " + user.email) : "User Email";
+
+      if (user.photoDataUrl){
+        previewImg.src = user.photoDataUrl;
+        previewImg.style.display = "block";
+        uploadText.style.display = "none";
+      } else {
+        previewImg.style.display = "none";
+        uploadText.style.display = "block";
+      }
+    }
+
+    btnBack.onclick = () => location.href = "./dashboard.html";
+
+    uploadCircle.onclick = () => fileInput.click();
+
+    fileInput.onchange = () => {
+      const f = fileInput.files && fileInput.files[0];
+      if (!f) return;
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUrl = String(reader.result || "");
+        AppState.updateUserPhotoEverywhere(dataUrl);
+        msg.textContent = "Saved.";
+        msg.style.color = "#0a7a2f";
+        setTimeout(()=>{ msg.textContent=""; msg.style.color="#b00020"; }, 900);
+        render();
+      };
+      reader.readAsDataURL(f);
+    };
+
+    function saveName(){
+      const name = username.value.trim();
+      if (!name){
+        msg.textContent = "Username cannot be empty.";
+        msg.style.color = "#b00020";
+        return;
+      }
+      AppState.updateUserNameEverywhere(name);
+      msg.textContent = "Saved.";
+      msg.style.color = "#0a7a2f";
+      setTimeout(()=>{ msg.textContent=""; msg.style.color="#b00020"; }, 900);
+      render();
+    }
+
+    username.addEventListener("blur", saveName);
+    username.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        saveName();
+        username.blur();
+      }
+    });
+
+    document.getElementById("btnContact").onclick = () => alert("Demo: Contact Us");
+
+    render();
+  </script>
+</body>
+</html>

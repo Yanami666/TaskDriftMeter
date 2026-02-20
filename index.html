@@ -2,153 +2,45 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Task Drift Meter</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link rel="stylesheet" href="./style.css" />
+  <title>Welcome</title>
 </head>
 <body>
-  <header class="top">
-    <h1>Task Drift Meter</h1>
-    <p class="muted">Enter a group.</p>
-  </header>
-
-  <main class="wrap">
-    <section class="card">
-      <h2>Create a group</h2>
-
-      <label class="field">
-        <span>Your name / alias</span>
-        <input id="nameCreate" placeholder="Name" />
-      </label>
-
-      <div class="row">
-        <button id="createBtn">Create group</button>
+  <div class="centerWrap">
+    <div class="phone">
+      <div class="statusbar">
+        <div>9:41</div>
+        <div>📶 WiFi 🔋</div>
       </div>
 
-      <div id="createdBox" class="hide">
-        <p class="muted">Your group code:</p>
-        <div class="row">
-          <div class="code mono" id="createdCode">—</div>
-          <button id="copyBtn" class="ghost">Copy</button>
-        </div>
-        <div class="row">
-          <button id="enterBtn">Enter group →</button>
+      <div class="centerHero">
+        <div class="heroSquare"></div>
+        <div style="font-weight:800;">Welcome to</div>
+        <div class="hrLines">
+          <div></div>
+          <div style="width:180px;"></div>
         </div>
       </div>
 
-      <p id="createStatus" class="muted"></p>
-    </section>
-
-    <section class="card">
-      <h2>Join a group</h2>
-
-      <label class="field">
-        <span>Your name / alias</span>
-        <input id="nameJoin" placeholder="e.g. Member A" />
-      </label>
-
-      <label class="field">
-        <span>Group code</span>
-        <input id="codeJoin" class="mono" placeholder="e.g. xxxxxx" />
-      </label>
-
-      <div class="row">
-        <button id="joinBtn">Join group →</button>
+      <div class="stack">
+        <button class="btn btnDark" id="btnGetStarted">Get started</button>
+        <button class="btn btnLight" id="btnSignIn">Sign In</button>
+        <button class="btn btnGhost" id="btnSkip">Skip</button>
       </div>
+    </div>
+  </div>
 
-      <p id="joinStatus" class="muted"></p>
-    </section>
-  </main>
+  <script src="./state.js"></script>
+  <script>
+    document.getElementById("btnGetStarted").onclick = () => location.href = "./signup.html";
+    document.getElementById("btnSignIn").onclick = () => location.href = "./signin.html";
 
-  <script type="module">
-    import { db } from "./firebase.js";
-    import { doc, setDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
-
-    const $ = (id) => document.getElementById(id);
-
-    const LS_MEMBER = "tdm_member_id";
-    const LS_GROUP  = "tdm_group_code";
-    const LS_NAME   = "tdm_display_name";
-
-    function makeId(){ return crypto.getRandomValues(new Uint32Array(4)).join("-"); }
-    function cleanCode(s){ return (s||"").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,12); }
-
-    let memberId = localStorage.getItem(LS_MEMBER);
-    if (!memberId){ memberId = makeId(); localStorage.setItem(LS_MEMBER, memberId); }
-
-    let createdCode = "";
-
-    $("createBtn").addEventListener("click", async () => {
-      try {
-        const name = ($("nameCreate").value || "").trim() || "Member";
-        localStorage.setItem(LS_NAME, name);
-
-        // 6-digit code (fast for prototyping)
-        createdCode = String(Math.floor(100000 + Math.random() * 900000));
-        createdCode = cleanCode(createdCode);
-
-        await setDoc(doc(db, "groups", createdCode), {
-          createdAt: serverTimestamp(),
-          createdBy: memberId
-        }, { merge: true });
-
-        $("createdCode").textContent = createdCode;
-        $("createdBox").classList.remove("hide");
-        $("createStatus").textContent = `Created group ${createdCode}. Share this code.`;
-      } catch (e) {
-        $("createStatus").textContent = `Error: ${e.message}`;
-      }
-    });
-
-    $("copyBtn").addEventListener("click", async () => {
-      try {
-        if (!createdCode) return;
-        await navigator.clipboard.writeText(createdCode);
-        $("createStatus").textContent = "Copied ✓";
-        setTimeout(()=> $("createStatus").textContent="", 1000);
-      } catch {
-        $("createStatus").textContent = "Copy failed (browser blocked).";
-      }
-    });
-
-    $("enterBtn").addEventListener("click", async () => {
-      try {
-        if (!createdCode) return;
-        localStorage.setItem(LS_GROUP, createdCode);
-        await ensureMember(createdCode, localStorage.getItem(LS_NAME) || "Member");
-        window.location.href = `./app.html?group=${encodeURIComponent(createdCode)}`;
-      } catch (e) {
-        $("createStatus").textContent = `Error: ${e.message}`;
-      }
-    });
-
-    $("joinBtn").addEventListener("click", async () => {
-      try {
-        const name = ($("nameJoin").value || "").trim() || "Member";
-        const code = cleanCode($("codeJoin").value);
-        if (!code) throw new Error("Enter group code.");
-
-        localStorage.setItem(LS_NAME, name);
-        localStorage.setItem(LS_GROUP, code);
-
-        const gSnap = await getDoc(doc(db, "groups", code));
-        if (!gSnap.exists()) throw new Error("Group not found. Check the code.");
-
-        await ensureMember(code, name);
-
-        $("joinStatus").textContent = `Joined ${code} ✓ Redirecting...`;
-        window.location.href = `./app.html?group=${encodeURIComponent(code)}`;
-      } catch (e) {
-        $("joinStatus").textContent = `Error: ${e.message}`;
-      }
-    });
-
-    async function ensureMember(code, name){
-      await setDoc(doc(db, "groups", code, "members", memberId), {
-        displayName: name,
-        joinedAt: serverTimestamp()
-      }, { merge: true });
-    }
+    document.getElementById("btnSkip").onclick = () => {
+      const u = AppState.loadUser();
+      AppState.saveUser({ lastAuthMode: "skip", email: u.email || "" });
+      location.href = "./dashboard.html";
+    };
   </script>
 </body>
 </html>

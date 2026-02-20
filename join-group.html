@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="./style.css" />
+  <title>Join Group</title>
+</head>
+<body>
+  <div class="centerWrap">
+    <div class="phone">
+      <div class="statusbar">
+        <div>9:41</div>
+        <div>📶 WiFi 🔋</div>
+      </div>
+
+      <div class="topRow">
+        <div style="width:34px;"></div>
+        <div style="font-size:18px;font-weight:900;">New Group</div>
+        <div id="btnBack" class="topIconAvatar" title="Back"></div>
+      </div>
+
+      <div style="height:110px;"></div>
+
+      <div style="font-size:20px;font-weight:900;margin-bottom:10px;">Join Group</div>
+
+      <div class="field">
+        <input id="code" placeholder="Group Code" />
+      </div>
+
+      <div class="field">
+        <input id="name" placeholder="Name" />
+      </div>
+
+      <button class="btn btnLight" id="btnJoin">Join Group</button>
+      <div class="msg" id="msg"></div>
+    </div>
+  </div>
+
+  <script src="./state.js"></script>
+  <script>
+    const btnBack = document.getElementById("btnBack");
+    AppState.applyTopRightAvatar(btnBack);
+    btnBack.onclick = () => location.href = "./dashboard.html";
+
+    document.getElementById("btnJoin").onclick = () => {
+      const code = document.getElementById("code").value.replace(/\s+/g, "").trim().toUpperCase();
+      const name = document.getElementById("name").value.trim();
+      const msg = document.getElementById("msg");
+
+      if (!code){
+        msg.textContent = "Please enter group code.";
+        msg.style.color = "#b00020";
+        return;
+      }
+
+      const res = AppState.joinGroup({ groupCode: code, nameOverride: name });
+
+      if (!res.ok){
+        msg.textContent = (res.error || "Join failed.") + " (Tip: check the group Code shown on Dashboard cards)";
+        msg.style.color = "#b00020";
+        return;
+      }
+
+      location.href = "./dashboard.html";
+    };
+  </script>
+</body>
+</html>

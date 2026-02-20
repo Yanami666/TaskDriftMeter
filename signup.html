@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="./style.css" />
+  <title>Sign Up</title>
+</head>
+<body>
+  <div class="centerWrap">
+    <div class="phone">
+      <div class="statusbar">
+        <div>9:41</div>
+        <div>📶 WiFi 🔋</div>
+      </div>
+
+      <h2>Sign Up</h2>
+
+      <div class="field">
+        <label>Email/Phone number</label>
+        <input id="email" placeholder="User Email/Phone Number" />
+      </div>
+
+      <div class="field">
+        <label>Set Password</label>
+        <input id="pw" type="password" placeholder="Enter Your Password" />
+      </div>
+
+      <div class="field">
+        <label>Re-Enter Password</label>
+        <input id="pw2" type="password" placeholder="Re-Enter your Password" />
+      </div>
+
+      <button class="btn btnDark" id="btnUp">Sign Up</button>
+
+      <div class="msg" id="msg"></div>
+
+      <div style="margin-top:16px;text-align:center;" class="small muted">
+        Already Have Account? <a class="link" href="./signin.html">Sign In</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="./state.js"></script>
+  <script>
+    const msg = document.getElementById("msg");
+
+    document.getElementById("btnUp").onclick = () => {
+      const email = document.getElementById("email").value.trim();
+      const pw = document.getElementById("pw").value;
+      const pw2 = document.getElementById("pw2").value;
+
+      if (!email) { msg.textContent = "Please enter email."; return; }
+      if (!pw || pw.length < 3) { msg.textContent = "Password too short (demo)."; return; }
+      if (pw !== pw2) { msg.textContent = "Passwords do not match."; return; }
+
+      const u = AppState.loadUser();
+      const defaultName = (u.username && u.username !== "Guest")
+        ? u.username
+        : (email.split("@")[0] || "User");
+
+      AppState.saveUser({
+        email,
+        username: defaultName,
+        lastAuthMode: "signup"
+      });
+
+      location.href = "./dashboard.html";
+    };
+  </script>
+</body>
+</html>

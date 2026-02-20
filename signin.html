@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="./style.css" />
+  <title>Sign In</title>
+</head>
+<body>
+  <div class="centerWrap">
+    <div class="phone">
+      <div class="statusbar">
+        <div>9:41</div>
+        <div>📶 WiFi 🔋</div>
+      </div>
+
+      <h2>Sign In</h2>
+
+      <div class="field">
+        <label>Email/Phone number</label>
+        <input id="email" placeholder="User Email/Phone Number" />
+      </div>
+
+      <div class="field">
+        <label>Password</label>
+        <input id="pw" type="password" placeholder="Enter your Password" />
+      </div>
+
+      <div class="small muted" style="margin:6px 0 10px;">Forgot Password?</div>
+
+      <button class="btn btnDark" id="btnIn">Sign In</button>
+
+      <div style="text-align:center;margin:14px 0;" >
+        <span class="muted" style="font-weight:800;">OR</span>
+      </div>
+
+      <button class="btn btnDark" id="btnGoogle">Use Google</button>
+      <button class="btn btnLight" id="btnApple" style="margin-top:12px;">Use Apple</button>
+
+      <div class="msg" id="msg"></div>
+    </div>
+  </div>
+
+  <script src="./state.js"></script>
+  <script>
+    const msg = document.getElementById("msg");
+
+    function demoSignIn(mode, emailLike){
+      const u = AppState.loadUser();
+      const email = emailLike || document.getElementById("email").value.trim();
+      const defaultName = (u.username && u.username !== "Guest")
+        ? u.username
+        : ((email||"user").split("@")[0] || "User");
+
+      AppState.saveUser({
+        email: email || "",
+        username: defaultName,
+        lastAuthMode: mode
+      });
+      location.href = "./dashboard.html";
+    }
+
+    document.getElementById("btnIn").onclick = () => {
+      const email = document.getElementById("email").value.trim();
+      const pw = document.getElementById("pw").value;
+      if (!email) { msg.textContent = "Please enter email."; return; }
+      if (!pw) { msg.textContent = "Please enter password."; return; }
+      demoSignIn("signin", email);
+    };
+
+    document.getElementById("btnGoogle").onclick = () => demoSignIn("google", "demo.google@gmail.com");
+    document.getElementById("btnApple").onclick = () => demoSignIn("apple", "demo.apple@icloud.com");
+  </script>
+</body>
+</html>

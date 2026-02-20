@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="./style.css" />
+  <title>Dashboard</title>
+</head>
+<body>
+  <div class="centerWrap">
+    <div class="phone">
+      <div class="statusbar">
+        <div>9:41</div>
+        <div>📶 WiFi 🔋</div>
+      </div>
+
+      <div class="topRow">
+        <div style="font-size:20px;font-weight:900;">My Groups</div>
+        <!-- top-right button becomes avatar automatically -->
+        <div id="btnProfile" class="topIconAvatar" title="Personal Profile"></div>
+      </div>
+
+      <div id="groupsWrap"></div>
+
+      <div style="height:16px;"></div>
+
+      <div class="stack">
+        <button class="btn btnDark" id="btnCreate">+ Create New Group</button>
+        <button class="btn btnLight" id="btnJoin">Join Group</button>
+      </div>
+
+      <div class="tabBar" aria-hidden="true">
+        <div class="tabDot"></div>
+        <div class="tabDot active"></div>
+        <div class="tabDot"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="./state.js"></script>
+  <script>
+    const groupsWrap = document.getElementById("groupsWrap");
+    const btnProfile = document.getElementById("btnProfile");
+
+    function renderTopRight(){
+        if (typeof AppState.applyTopRightAvatar === "function") {
+  AppState.applyTopRightAvatar(btnProfile);
+} else if (typeof AppState.applyTopIcon === "function") {
+  AppState.applyTopIcon(btnProfile);
+}
+    }
+
+    function renderGroups(){
+      const groups = AppState.loadGroups();
+      groupsWrap.innerHTML = "";
+
+      if (!groups.length){
+        const empty = document.createElement("div");
+        empty.className = "muted small";
+        empty.style.padding = "12px 0";
+        empty.textContent = "No groups yet. Create or join one.";
+        groupsWrap.appendChild(empty);
+        return;
+      }
+
+      groups.forEach(g => {
+        const card = document.createElement("div");
+        card.className = "groupCard";
+
+        const members = g.members || [];
+        const show = members.slice(0, 3);
+        const rest = Math.max(0, members.length - show.length);
+
+        const circlesHtml = show.map(m => {
+          const hasPhoto = !!m.photoDataUrl;
+          if (hasPhoto){
+            return `<div class="memberCircle"><img src="${m.photoDataUrl}" alt=""></div>`;
+          }
+          return `<div class="memberCircle">${AppState.initials(m.name)}</div>`;
+        }).join("");
+
+        const plusHtml = rest > 0 ? `<div class="memberCircle">+${rest}</div>` : "";
+
+        card.innerHTML = `
+          <div class="smallSquare" title="Copy Group Code"></div>
+          <div class="groupTitleBar"></div>
+          <div class="groupSubtitleBar"></div>
+
+          <div class="memberRow">
+            ${circlesHtml}
+            ${plusHtml}
+          </div>
+
+          <div class="fakeLines"></div>
+          <div class="fakeLines light"></div>
+
+          <div class="small muted" style="margin-top:10px;">
+            <b style="color:#111;">${g.name}</b>
+            <span class="muted"> · Code: ${g.id}</span>
+          </div>
+        `;
+
+        // small square: copy code
+        const sq = card.querySelector(".smallSquare");
+        sq.onclick = async (e) => {
+          e.stopPropagation();
+          try { await navigator.clipboard.writeText(g.id); } catch {}
+          sq.style.background = "#666";
+          setTimeout(()=> sq.style.background = "#fff", 350);
+        };
+
+        groupsWrap.appendChild(card);
+      });
+    }
+
+    btnProfile.onclick = () => location.href = "./profile.html";
+    document.getElementById("btnCreate").onclick = () => location.href = "./create-group.html";
+    document.getElementById("btnJoin").onclick = () => location.href = "./join-group.html";
+
+    renderTopRight();
+    renderGroups();
+  </script>
+</body>
+</html>
