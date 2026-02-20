@@ -1,137 +1,138 @@
 (function () {
-    const App = window.AppState;
-    if (!App) return;
+    const btnGroup = document.getElementById("btnGroup");
+    const btnProfile = document.getElementById("btnProfile");
   
-    const group = App.getCurrentGroup();
-    if (!group) {
-      location.href = "./dashboard.html";
-      return;
+    const tabGroup = document.getElementById("tabGroup");
+    const tabDash = document.getElementById("tabDash");
+  
+    const totalBig = document.getElementById("totalBig");
+    const ringCanvas = document.getElementById("ringCanvas");
+    const taskBox = document.getElementById("taskBox");
+  
+    let currentGroup = null;
+  
+    function loadGroupOrRedirect() {
+      currentGroup = AppState.getCurrentGroup() || AppState.loadGroups()[0] || null;
+      if (!currentGroup) {
+        alert("Please create or join a group first.");
+        location.href = "./dashboard.html";
+        return false;
+      }
+      AppState.setCurrentGroupId(currentGroup.id);
+      return true;
     }
   
-    const $ = (sel) => document.querySelector(sel);
+    function renderTopRight() {
+      AppState.applyTopRightAvatar(btnProfile);
+    }
   
-    const topLeftBtn = $("#topLeftBtn");
-    const topRightBtn = $("#topRightBtn");
-    const totalTimeValue = $("#totalTimeValue");
-    const donutChart = $("#donutChart");
-    const taskList = $("#taskList");
+    function renderTotal() {
+      const mins = AppState.getMyTotalMinutesInGroup(currentGroup.id);
+      totalBig.textContent = AppState.formatMinutes(mins);
+    }
   
-    const navGroupView = $("#navGroupView");
-    const navDashboard = $("#navDashboard");
-    const navTime = $("#navTime");
+    function drawRingAndTasks() {
+      const list = AppState.getGroupTaskBreakdownForUser(currentGroup.id);
+      const total = list.reduce((s, x) => s + x.minutes, 0);
   
-    // 与 group-view 一样的颜色逻辑（更清晰）
-    // Same color logic as group-view (clearer colors)
-    const COLORS = ["#F0D35B", "#66AEEF", "#F46D6D", "#8FD38F", "#B9A3FF", "#F5A25D"];
+      const ctx = ringCanvas.getContext("2d");
+      const w = ringCanvas.width;
+      const h = ringCanvas.height;
+      ctx.clearRect(0, 0, w, h);
   
-    init();
+      const cx = w / 2;
+      const cy = h / 2;
+      const r = 34;
+      const lineW = 12;
   
-    function init() {
-      if (topRightBtn) {
-        App.applyTopRightAvatar(topRightBtn);
-        topRightBtn.addEventListener("click", () => {
-          location.href = "./profile.html";
+      // outer outline
+      ctx.beginPath();
+      ctx.arc(cx, cy, r + 8, 0, Math.PI * 2);
+      ctx.strokeStyle = "#222";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+  
+      // base ring
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.strokeStyle = "#eee";
+      ctx.lineWidth = lineW;
+      ctx.stroke();
+  
+      const colors = ["#666", "#8f8f8f", "#b0b0b0", "#d0d0d0", "#999"];
+  
+      if (total > 0) {
+        let start = -Math.PI / 2;
+        list.forEach((item, i) => {
+          const angle = (item.minutes / total) * Math.PI * 2;
+          ctx.beginPath();
+          ctx.arc(cx, cy, r, start, start + angle);
+          ctx.strokeStyle = colors[i % colors.length];
+          ctx.lineWidth = lineW;
+          ctx.lineCap = "round";
+          ctx.stroke();
+          start += angle + 0.02;
         });
       }
   
-      if (topLeftBtn) {
-        topLeftBtn.addEventListener("click", () => {
-          location.href = "./group-view.html";
-        });
-      }
+      ctx.textAlign = "center";
+      ctx.fillStyle = "#bbb";
+      ctx.font = "700 9px system-ui";
+      ctx.fillText("All Tasks", cx, cy - 2);
   
-      navGroupView?.addEventListener("click", () => location.href = "./group-view.html");
-      navDashboard?.addEventListener("click", () => location.href = "./dashboard.html");
-      navTime?.addEventListener("click", () => {});
+      ctx.fillStyle = "#111";
+      ctx.font = "900 18px system-ui";
+      ctx.fillText(total > 0 ? "100%" : "0%", cx, cy + 18);
   
-      render();
-    }
+      // task list
+      taskBox.innerHTML = "";
   
-    function render() {
-      const groupId = group.id;
-      const totalMinutes = App.getMyTotalMinutesInGroup(groupId);
-      const breakdown = App.getGroupTaskBreakdownForUser(groupId); // [{taskId, taskName, minutes}]
-  
-      if (totalTimeValue) {
-        totalTimeValue.textContent = App.formatMinutes(totalMinutes);
-      }
-  
-      renderDonut(breakdown);
-      renderTaskList(groupId, breakdown, totalMinutes);
-    }
-  
-    function renderDonut(breakdown) {
-      if (!donutChart) return;
-  
-      const total = breakdown.reduce((sum, x) => sum + Number(x.minutes || 0), 0);
-  
-      if (!total || breakdown.length === 0) {
-        donutChart.style.background = "conic-gradient(#e5e5e5 0deg 360deg)";
+      if (!list.length) {
+        taskBox.innerHTML = `<div style="font-size:9px;color:#999;">No tasks logged yet.</div>`;
         return;
       }
   
-      let start = 0;
-      const segments = breakdown.map((item, i) => {
-        const ratio = (item.minutes || 0) / total;
-        const end = start + ratio;
-        const seg = `${COLORS[i % COLORS.length]} ${start * 360}deg ${end * 360}deg`;
-        start = end;
-        return seg;
-      });
+      const max = Math.max(...list.map(x => x.minutes), 1);
   
-      donutChart.style.background = `conic-gradient(${segments.join(", ")})`;
-    }
+      list.forEach(item => {
+        const row = document.createElement("div");
+        row.className = "taskRow";
   
-    function renderTaskList(groupId, breakdown, totalMinutes) {
-      if (!taskList) return;
+        const isDone = (currentGroup.completedTaskIds || []).includes(item.taskId);
+        const width = Math.max(15, (item.minutes / max) * 100);
   
-      if (!breakdown.length) {
-        taskList.innerHTML = `<div class="emptyText">No logged work yet</div>`;
-        return;
-      }
-  
-      const completedSet = new Set(group.completedTaskIds || []);
-  
-      taskList.innerHTML = breakdown.map((item, i) => {
-        const pct = totalMinutes > 0 ? Math.round((item.minutes / totalMinutes) * 100) : 0;
-        const checked = completedSet.has(item.taskId);
-        const color = COLORS[i % COLORS.length];
-  
-        return `
-          <div class="taskRow" data-task-id="${escapeHtml(item.taskId)}">
-            <div class="taskRowTop">
-              <button class="taskCheck ${checked ? "checked" : ""}" aria-label="toggle complete"></button>
-              <div class="taskName">${escapeHtml(item.taskName)}</div>
-              <div class="taskTime">${escapeHtml(App.formatMinutes(item.minutes))}</div>
-            </div>
-            <div class="taskBarTrack">
-              <div class="taskBarFill" style="width:${pct}%; background:${color};"></div>
-            </div>
+        row.innerHTML = `
+          <button class="check ${isDone ? "on" : ""}" type="button">${isDone ? "✓" : ""}</button>
+          <div>
+            <div class="taskTrack"><div class="taskFill" style="width:${width}%"></div></div>
+            <div class="taskName">${item.taskName}</div>
           </div>
+          <div class="minsText">${AppState.formatMinutes(item.minutes)}</div>
         `;
-      }).join("");
   
-      taskList.querySelectorAll(".taskRow").forEach(row => {
-        const taskId = row.getAttribute("data-task-id");
-        const btn = row.querySelector(".taskCheck");
-        btn?.addEventListener("click", () => {
-          App.toggleTaskComplete(groupId, taskId);
-          // 重新取最新 group 状态再渲染
-          const latest = App.getCurrentGroup();
-          if (latest) {
-            group.completedTaskIds = latest.completedTaskIds || [];
-          }
-          render();
-        });
+        row.querySelector(".check").onclick = () => {
+          AppState.toggleTaskComplete(currentGroup.id, item.taskId);
+          currentGroup = AppState.getCurrentGroup();
+          drawRingAndTasks();
+        };
+  
+        taskBox.appendChild(row);
       });
     }
   
-    function escapeHtml(str) {
-      return String(str)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#39;");
+    btnGroup.onclick = () => (location.href = "./group-view.html");
+    btnProfile.onclick = () => (location.href = "./profile.html");
+    tabGroup.onclick = () => (location.href = "./group-view.html");
+    tabDash.onclick = () => (location.href = "./dashboard.html");
+  
+    try {
+      renderTopRight();
+      if (loadGroupOrRedirect()) {
+        renderTotal();
+        drawRingAndTasks();
+      }
+    } catch (err) {
+      console.error("[time-tracking.js] crash:", err);
+      alert("Time tracking crashed. Check Console.");
     }
   })();

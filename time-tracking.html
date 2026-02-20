@@ -2,310 +2,166 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Time Tracking</title>
+  <link rel="stylesheet" href="./style.css" />
   <style>
-    * { box-sizing: border-box; }
+    .pageTitleFigma{ top:8px; left:8px; }
 
-    body {
-      margin: 0;
-      background: #f3f3f3;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      min-height: 100vh;
-      padding: 24px;
-      color: #111;
+    .wrap{
+      margin-top:6px;
+      height: calc(100% - 38px);
+      display:flex;
+      flex-direction:column;
     }
 
-    .phone {
-      width: 360px;
-      min-height: 760px;
-      background: #fff;
-      border-radius: 32px;
-      border: 1px solid #e8e8e8;
-      box-shadow: 0 0 0 1px rgba(0,0,0,0.02) inset;
-      padding: 14px 14px 18px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .status {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-weight: 700;
-      font-size: 14px;
-      padding: 2px 2px 8px;
-    }
-
-    .topbar {
-      display: grid;
+    .headerRow{
+      display:grid;
       grid-template-columns: 28px 1fr 28px;
-      align-items: center;
-      gap: 10px;
-      padding: 2px 0 10px;
-      border-bottom: 1px solid #e5e5e5;
+      gap:8px;
+      align-items:center;
+    }
+    .ghostBtn{
+      width:28px;height:28px;border:1.5px solid #222;border-radius:8px;background:#fff;cursor:pointer;
+    }
+    .headerTitle{
+      text-align:center;
+      font-weight:800;
+      font-size:13px;
     }
 
-    .topIconBtn {
-      width: 28px;
-      height: 28px;
-      border: 1.8px solid #222;
-      border-radius: 9px;
-      background: #fff;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      padding: 0;
+    .main{
+      flex:1;
+      min-height:0;
+      display:flex;
+      flex-direction:column;
+      padding-bottom:44px;
     }
 
-    .topIconBtn img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
+    .totalCard{
+      border:1.5px solid #222;
+      border-radius:8px;
+      background:#fff;
+      min-height:96px;
+      display:grid;
+      place-items:center;
     }
 
-    .title {
-      text-align: center;
-      font-weight: 700;
-      font-size: 14px;
+    .mutedSmall{
+      font-size:9px;
+      color:#b8b8b8;
+      font-weight:800;
+      text-align:center;
     }
 
-    .card {
-      border: 2px solid #222;
-      border-radius: 10px;
-      background: #fff;
+    .totalBig{
+      margin-top:4px;
+      font-size:34px;
+      line-height:1;
+      font-weight:900;
+      text-align:center;
     }
 
-    .totalCard {
-      margin-top: 12px;
-      padding: 18px 12px 16px;
-      text-align: center;
+    .secTitle{
+      margin-top:12px;
+      font-size:10px;
+      font-weight:800;
     }
 
-    .mutedLabel {
-      font-size: 10px;
-      color: #bbb;
-      font-weight: 700;
-      letter-spacing: 0.03em;
-      text-transform: uppercase;
-      margin-bottom: 4px;
+    .ringWrap{
+      display:flex;
+      justify-content:center;
+      margin:8px 0 8px;
     }
 
-    .totalValue {
-      font-weight: 800;
-      font-size: 28px;
-      line-height: 1;
-      margin-top: 2px;
+    .taskBox{
+      border:1.5px solid #222;
+      border-radius:8px;
+      background:#fff;
+      padding:8px;
+      flex:1;
+      min-height:0;
+      overflow:auto;
     }
 
-    .sectionTitle {
-      margin-top: 12px;
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      color: #111;
+    .taskRow{
+      display:grid;
+      grid-template-columns: 16px 1fr 32px;
+      gap:8px;
+      align-items:center;
+      padding:6px 0;
+      border-bottom:1px solid #f0f0f0;
+    }
+    .taskRow:last-child{ border-bottom:none; }
+
+    .check{
+      width:12px;height:12px;border:1px solid #222;border-radius:3px;
+      background:#fff; cursor:pointer; display:grid; place-items:center;
+      font-size:8px; line-height:1; padding:0;
+    }
+    .check.on{
+      background:#666;
+      border-color:#666;
+      color:#fff;
     }
 
-    .chartWrap {
-      margin-top: 12px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 130px;
+    .taskTrack{
+      height:6px;background:#ddd;border-radius:999px;overflow:hidden;position:relative;
     }
-
-    /* 清晰彩色圆环 */
-    /* Crisp colored donut */
-    .donut {
-      width: 92px;
-      height: 92px;
-      border-radius: 50%;
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.06);
+    .taskFill{
+      position:absolute;left:0;top:0;bottom:0;
+      background:#666;border-radius:999px;
     }
-
-    .donutInner {
-      width: 62px;
-      height: 62px;
-      border-radius: 50%;
-      background: #fff;
-      border: 1.5px solid #ddd;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      line-height: 1.05;
-      text-align: center;
+    .taskName{
+      margin-top:3px;font-size:9px;color:#888;
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
     }
-
-    .donutInner .small {
-      font-size: 8px;
-      color: #b6b6b6;
-      font-weight: 700;
-    }
-
-    .donutInner .big {
-      font-size: 12px;
-      font-weight: 800;
-      margin-top: 2px;
-    }
-
-    .breakdownCard {
-      margin-top: 12px;
-      padding: 10px 10px 12px;
-      min-height: 190px;
-    }
-
-    .taskList {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .taskRow {
-      border-bottom: 1px solid #efefef;
-      padding-bottom: 6px;
-    }
-
-    .taskRow:last-child {
-      border-bottom: none;
-      padding-bottom: 0;
-    }
-
-    .taskRowTop {
-      display: grid;
-      grid-template-columns: 16px 1fr auto;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 4px;
-    }
-
-    .taskCheck {
-      width: 16px;
-      height: 16px;
-      border-radius: 4px;
-      border: 1.5px solid #666;
-      background: #fff;
-      cursor: pointer;
-      padding: 0;
-    }
-
-    .taskCheck.checked {
-      background: #666;
-      border-color: #666;
-    }
-
-    .taskName {
-      font-size: 10px;
-      color: #666;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .taskTime {
-      font-size: 10px;
-      color: #b3b3b3;
-      min-width: 36px;
-      text-align: right;
-    }
-
-    .taskBarTrack {
-      height: 8px;
-      border-radius: 999px;
-      background: #ededed;
-      overflow: hidden;
-      margin-left: 24px;
-    }
-
-    .taskBarFill {
-      height: 100%;
-      border-radius: 999px;
-      width: 0%;
-      transition: width 0.2s ease;
-    }
-
-    .emptyText {
-      font-size: 11px;
-      color: #999;
-      text-align: center;
-      padding: 28px 8px;
-    }
-
-    .bottomNav {
-      position: absolute;
-      left: 14px;
-      right: 14px;
-      bottom: 12px;
-      height: 48px;
-      border-top: 1px solid #e8e8e8;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 2px;
-      background: #fff;
-    }
-
-    .navDot {
-      width: 26px;
-      height: 26px;
-      border-radius: 8px;
-      border: 1.8px solid #222;
-      background: #fff;
-      cursor: pointer;
-    }
-
-    .navDot.active {
-      background: #666;
-      border-color: #666;
+    .minsText{
+      text-align:right;font-size:9px;color:#aaa;
     }
   </style>
 </head>
 <body>
-  <div class="phone">
-    <div class="status">
-      <span>9:41</span>
-      <span>📶 WiFi 🔋</span>
-    </div>
+  <div class="centerWrap">
+    <div class="phone">
 
-    <div class="topbar">
-      <button id="topLeftBtn" class="topIconBtn" aria-label="Back"></button>
-      <div class="title">Your Time</div>
-      <button id="topRightBtn" class="topIconBtn" aria-label="Profile"></button>
-    </div>
+      <div class="wrap">
+        <div class="statusbar">
+          <div>9:41</div>
+          <div>📶 WiFi 🔋</div>
+        </div>
 
-    <div class="card totalCard">
-      <div class="mutedLabel">Total Time</div>
-      <div id="totalTimeValue" class="totalValue">0m</div>
-    </div>
+        <div class="headerRow">
+          <button id="btnGroup" class="ghostBtn" type="button"></button>
+          <div class="headerTitle">Your Time</div>
+          <div id="btnProfile" class="topIconAvatar"></div>
+        </div>
 
-    <div class="sectionTitle">Breakdown</div>
+        <div class="hr"></div>
 
-    <div class="chartWrap">
-      <div id="donutChart" class="donut">
-        <div class="donutInner">
-          <div class="small">All Tasks</div>
-          <div class="big">100%</div>
+        <div class="main">
+          <div class="totalCard">
+            <div>
+              <div class="mutedSmall">TOTAL TIME</div>
+              <div id="totalBig" class="totalBig">0h</div>
+            </div>
+          </div>
+
+          <div class="secTitle">BREAKDOWN</div>
+
+          <div class="ringWrap">
+            <canvas id="ringCanvas" width="140" height="140"></canvas>
+          </div>
+
+          <div id="taskBox" class="taskBox"></div>
         </div>
       </div>
-    </div>
 
-    <div class="card breakdownCard">
-      <div id="taskList" class="taskList"></div>
-    </div>
-
-    <div class="bottomNav">
-      <button id="navGroupView" class="navDot" aria-label="Group View"></button>
-      <button id="navDashboard" class="navDot" aria-label="Dashboard"></button>
-      <button id="navTime" class="navDot active" aria-label="Time Tracking"></button>
+      <div class="tabBar">
+        <button id="tabGroup" class="tabBtn" type="button" title="Group View"></button>
+        <button id="tabDash" class="tabBtn" type="button" title="Dashboard"></button>
+        <button id="tabTime" class="tabBtn active" type="button" title="Time Tracking"></button>
+      </div>
     </div>
   </div>
 
