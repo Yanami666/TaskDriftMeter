@@ -28,6 +28,8 @@ window.AppState = (function () {
     return safeParse(localStorage.getItem(key), fallback);
   }
 
+  // 6位邀请码（字母数字混合，去掉易混淆字符）
+  // 6-char invite code (alphanumeric, avoids confusing chars)
   function randomCode() {
     const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
     let out = "";
@@ -41,6 +43,11 @@ window.AppState = (function () {
     const parts = s.split(/\s+/).filter(Boolean);
     if (parts.length === 1) return parts[0].slice(0, 1).toUpperCase();
     return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+
+  function clamp(v, min, max) {
+    if (!Number.isFinite(v)) return min;
+    return Math.max(min, Math.min(max, v));
   }
 
   function normalizeUser(u) {
@@ -79,6 +86,7 @@ window.AppState = (function () {
       stars: clamp(Number(log?.stars || 3), 1, 5),
       minutes: Math.max(0, Number(log?.minutes || 0)),
       photoDataUrl: log?.photoDataUrl || "",
+      description: String(log?.description || "").trim(), // ✅ 新增
       memberId: log?.memberId || "",
       memberName: String(log?.memberName || "Guest").trim() || "Guest",
       memberEmail: String(log?.memberEmail || "").trim(),
@@ -90,7 +98,7 @@ window.AppState = (function () {
   function normalizeGroup(g) {
     return {
       id: g?.id || uid("g"),
-      code: String(g?.code || "").trim().toUpperCase(),
+      code: String(g?.code || "").trim().toUpperCase() || randomCode(),
       name: String(g?.name || "Untitled Group").trim() || "Untitled Group",
       description: String(g?.description || "").trim(),
       bannerDataUrl: g?.bannerDataUrl || "",
@@ -103,11 +111,6 @@ window.AppState = (function () {
       createdAt: Number(g?.createdAt || Date.now()),
       updatedAt: Number(g?.updatedAt || Date.now())
     };
-  }
-
-  function clamp(v, min, max) {
-    if (!Number.isFinite(v)) return min;
-    return Math.max(min, Math.min(max, v));
   }
 
   // =========================
@@ -154,7 +157,7 @@ window.AppState = (function () {
   }
 
   // =========================
-  // User sync into groups
+  // Sync user into existing groups
   // =========================
   function updateCurrentUserInAllGroups() {
     const user = loadUser();
@@ -171,6 +174,20 @@ window.AppState = (function () {
           email: user.email,
           photoDataUrl: user.photoDataUrl || ""
         });
+
+        // 同步已存在日志里的头像和名字（演示版更一致）
+        // Sync existing logs too for demo consistency
+        g.workLogs = (g.workLogs || []).map(log => {
+          const sameUser = log.memberId === user.id || (!!user.email && log.memberEmail === user.email);
+          if (!sameUser) return log;
+          return normalizeLog({
+            ...log,
+            memberName: user.username,
+            memberEmail: user.email,
+            memberPhotoDataUrl: user.photoDataUrl || ""
+          });
+        });
+
         g.updatedAt = Date.now();
         changed = true;
       }
@@ -295,6 +312,7 @@ window.AppState = (function () {
       stars: Number(input.stars || 3),
       minutes,
       photoDataUrl: input.photoDataUrl || "",
+      description: String(input.description || "").trim(), // ✅ 新增
       memberId: user.id,
       memberName: user.username || "Guest",
       memberEmail: user.email || "",
@@ -324,7 +342,7 @@ window.AppState = (function () {
   }
 
   // =========================
-  // Derived / UI data
+  // Derived
   // =========================
   function getMyTotalMinutesInGroup(groupId) {
     const user = loadUser();
@@ -370,14 +388,14 @@ window.AppState = (function () {
     return `${m}m`;
   }
 
+  // =========================
+  // UI helpers
+  // =========================
   function applyTopRightAvatar(el) {
     if (!el) return;
     const user = loadUser();
 
-    // 容错：即使 style.css 没加载对应 class，也尽量显示
-    // Fallback: display avatar even if class styles are missing
     el.classList.add("topIconAvatar");
-
     if (user.photoDataUrl) {
       el.innerHTML = `<img src="${user.photoDataUrl}" alt="avatar">`;
     } else {
@@ -391,40 +409,31 @@ window.AppState = (function () {
     localStorage.removeItem(KEYS.currentGroupId);
   }
 
-  // =========================
-  // Public API
-  // =========================
   return {
-    // user
     loadUser,
     saveUser,
 
-    // groups
     loadGroups,
     saveGroups,
     getCurrentGroupId,
     setCurrentGroupId,
     getCurrentGroup,
+
     updateCurrentUserInAllGroups,
 
-    // group actions
     createGroup,
     joinGroup,
 
-    // logs / tasks
     addWorkLog,
     toggleTaskComplete,
 
-    // derived
     getMyTotalMinutesInGroup,
     getGroupTaskBreakdownForUser,
     formatMinutes,
 
-    // ui
     applyTopRightAvatar,
     initials,
 
-    // debug
     resetAll
   };
 })();

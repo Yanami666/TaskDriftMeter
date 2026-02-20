@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Log Work</title>
+  <style>
+    * { box-sizing: border-box; }
+    body{
+      margin:0;
+      background:#e9e9e9;
+      font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+      display:flex;
+      justify-content:center;
+      align-items:flex-start;
+      min-height:100vh;
+      padding:24px;
+      color:#111;
+    }
+
+    .phone{
+      width:360px;
+      min-height:760px;
+      border-radius:32px;
+      background:#d8d8d8;
+      padding:14px;
+      position:relative;
+      border:1px solid #ddd;
+    }
+
+    .status{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      font-weight:700;
+      font-size:14px;
+      padding:2px 2px 8px;
+    }
+
+    .card{
+      width:100%;
+      max-width: 320px;
+      margin: 90px auto 0;
+      background:#fff;
+      border:2px solid #222;
+      border-radius:14px;
+      padding:12px;
+      position:relative;
+    }
+
+    .closeBtn{
+      position:absolute;
+      top:8px;
+      right:8px;
+      width:22px;
+      height:22px;
+      border-radius:50%;
+      border:1.5px solid #222;
+      background:#fff;
+      cursor:pointer;
+      font-size:12px;
+      line-height:1;
+    }
+
+    .title{
+      text-align:center;
+      font-weight:700;
+      font-size:14px;
+      margin:4px 0 10px;
+    }
+
+    .label{
+      font-size:10px;
+      font-weight:700;
+      color:#555;
+      margin:6px 0 3px;
+    }
+
+    .input, .select{
+      width:100%;
+      height:24px;
+      border:1.5px solid #222;
+      border-radius:4px;
+      padding:0 8px;
+      font-size:10px;
+      background:#fff;
+    }
+
+    .textarea{
+      width:100%;
+      min-height:52px;
+      border:1.5px solid #222;
+      border-radius:4px;
+      padding:6px 8px;
+      font-size:10px;
+      resize:vertical;
+      font-family:inherit;
+    }
+
+    .photoRow{
+      display:grid;
+      grid-template-columns: 44px 1fr;
+      gap:0;
+      border:1.5px solid #222;
+      border-radius:4px;
+      overflow:hidden;
+      min-height:44px;
+    }
+
+    .photoPreview{
+      border-right:1px dashed #999;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:#fafafa;
+      font-size:9px;
+      color:#888;
+      overflow:hidden;
+    }
+
+    .photoPreview img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
+
+    .photoControls{
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      gap:4px;
+      padding:4px 6px;
+    }
+
+    .tinyBtn{
+      border:1px solid #999;
+      border-radius:4px;
+      background:#fff;
+      font-size:9px;
+      height:18px;
+      cursor:pointer;
+      padding:0 6px;
+      text-align:left;
+    }
+
+    .starRow{
+      display:flex;
+      align-items:center;
+      gap:4px;
+      border:1.5px solid #222;
+      border-radius:4px;
+      height:24px;
+      padding:0 6px;
+      user-select:none;
+    }
+
+    .star{
+      cursor:pointer;
+      font-size:13px;
+      color:#111;
+      opacity:.35;
+      line-height:1;
+    }
+
+    .star.active{ opacity:1; }
+
+    .timeRow{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:6px;
+    }
+
+    .btnPrimary, .btnSecondary{
+      width:100%;
+      height:28px;
+      border-radius:6px;
+      cursor:pointer;
+      font-weight:700;
+      margin-top:8px;
+    }
+
+    .btnPrimary{
+      background:#666;
+      color:#fff;
+      border:1.5px solid #666;
+    }
+
+    .btnSecondary{
+      background:#fff;
+      color:#111;
+      border:1.5px solid #222;
+      margin-top:6px;
+    }
+
+    .hint{
+      color:#b30000;
+      font-size:10px;
+      margin-top:6px;
+      min-height:14px;
+    }
+
+    .hiddenInput{
+      display:none;
+    }
+  </style>
+</head>
+<body>
+  <div class="phone">
+    <div class="status">
+      <span>9:41</span>
+      <span>📶 WiFi 🔋</span>
+    </div>
+
+    <div class="card">
+      <button id="closeBtn" class="closeBtn" aria-label="Close">×</button>
+      <div class="title">Log Your Work</div>
+
+      <div class="label">Select your task</div>
+      <select id="taskSelect" class="select">
+        <option value="">Select</option>
+      </select>
+
+      <div class="label">Or add new task</div>
+      <input id="newTaskInput" class="input" placeholder="Task name" />
+
+      <div class="label">Description</div>
+      <textarea id="descInput" class="textarea" placeholder="What did you do?"></textarea>
+
+      <div class="label">Add photo</div>
+      <div class="photoRow">
+        <div id="photoPreview" class="photoPreview">No photo</div>
+        <div class="photoControls">
+          <button id="uploadBtn" class="tinyBtn" type="button">Upload photo</button>
+          <button id="cameraBtn" class="tinyBtn" type="button">Use camera</button>
+        </div>
+      </div>
+      <input id="fileInput" class="hiddenInput" type="file" accept="image/*" />
+      <input id="cameraInput" class="hiddenInput" type="file" accept="image/*" capture="environment" />
+
+      <div class="label">Type (difficulty)</div>
+      <div id="starRow" class="starRow" aria-label="Difficulty stars">
+        <span class="star" data-v="1">★</span>
+        <span class="star" data-v="2">★</span>
+        <span class="star" data-v="3">★</span>
+        <span class="star" data-v="4">★</span>
+        <span class="star" data-v="5">★</span>
+      </div>
+
+      <div class="label">Time</div>
+      <div class="timeRow">
+        <input id="hoursInput" class="input" type="number" min="0" step="1" placeholder="Hours" />
+        <input id="minutesInput" class="input" type="number" min="0" max="59" step="1" placeholder="Minutes" />
+      </div>
+
+      <button id="submitBtn" class="btnPrimary" type="button">Submit</button>
+      <button id="cancelBtn" class="btnSecondary" type="button">Cancel</button>
+
+      <div id="hint" class="hint"></div>
+    </div>
+  </div>
+
+  <script src="./state.js"></script>
+  <script src="./log-work.js"></script>
+</body>
+</html>

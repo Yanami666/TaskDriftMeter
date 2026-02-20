@@ -2,352 +2,341 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Group View</title>
-  <link rel="stylesheet" href="./style.css" />
   <style>
-    .pageTitleFigma{ top:8px; left:8px; }
-
-    .wrap{
-      margin-top:6px;
-      height: calc(100% - 38px);
+    * { box-sizing: border-box; }
+    body{
+      margin:0;
+      background:#f3f3f3;
+      font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
       display:flex;
-      flex-direction:column;
+      justify-content:center;
+      align-items:flex-start;
+      min-height:100vh;
+      padding:24px;
+      color:#111;
     }
 
-    .headerRow{
+    .phone{
+      width: 360px;
+      min-height: 760px;
+      background:#fff;
+      border-radius: 32px;
+      border: 1px solid #e8e8e8;
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.02) inset;
+      padding: 14px 14px 18px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .status{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      font-weight:700;
+      font-size:14px;
+      padding: 2px 2px 8px;
+    }
+
+    .topbar{
       display:grid;
       grid-template-columns: 28px 1fr 28px;
-      gap:8px;
       align-items:center;
+      gap:10px;
+      padding: 2px 0 10px;
+      border-bottom:1px solid #e5e5e5;
     }
 
-    .ghostBtn{
-      width:28px;height:28px;border:1.5px solid #222;border-radius:8px;background:#fff;cursor:pointer;
+    .topIconBtn{
+      width:28px; height:28px;
+      border:1.8px solid #222;
+      border-radius:9px;
+      background:#fff;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      padding:0;
+    }
+    .topIconBtn img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
+    .topIconAvatar img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
     }
 
-    .headerTitle{
+    .title{
       text-align:center;
-      font-weight:800;
-      font-size:13px;
+      font-weight:700;
+      font-size:14px;
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
     }
 
-    .main{
-      flex:1;
-      min-height:0;
+    .sectionLabel{
+      margin-top:10px;
+      margin-bottom:4px;
+      font-size:11px;
+      font-weight:700;
+      color:#666;
+      letter-spacing:0.02em;
+      text-transform:uppercase;
+    }
+
+    .overviewBox{
+      border:2px solid #222;
+      border-radius:10px;
+      min-height:96px;
+      position:relative;
+      overflow:hidden;
+      background:#fff;
+    }
+
+    .donutWrap{
+      width:100%;
+      height:100%;
+      min-height:92px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .donutChart{
+      width:54px;
+      height:54px;
+      border-radius:50%;
+      position:relative;
+    }
+
+    .donutHole{
+      position:absolute;
+      inset:8px;
+      background:#fff;
+      border-radius:50%;
+    }
+
+    .donutEmptyRing{
+      width:54px;
+      height:54px;
+      border-radius:50%;
+      border:8px solid #ddd;
+      box-sizing:border-box;
+    }
+
+    .recentList{
+      margin-top:8px;
       display:flex;
       flex-direction:column;
-      padding-bottom:44px; /* tab bar */
-      position:relative;
-    }
-
-    .tinyTitle{
-      font-size:9px;
-      font-weight:800;
-      color:#666;
-      margin-bottom:6px;
-    }
-
-    .overviewCard{
-      border:1.5px solid #222;
-      border-radius:8px;
-      background:#fff;
-      padding:10px;
-    }
-
-    .ringBox{
-      min-height:72px;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-    }
-
-    .recentArea{
-      margin-top:10px;
-      flex:1;
-      min-height:0;
-      overflow:auto;
-    }
-
-    .recentRow{
-      display:grid;
-      grid-template-columns: 20px 1fr 28px;
-      gap:8px;
-      align-items:center;
-      padding:6px 0;
-      border-bottom:1px solid #f0f0f0;
-    }
-
-    .memberDot{
-      width:18px;height:18px;border-radius:999px;border:1px solid #222;
-      display:grid;place-items:center;font-size:9px;font-weight:800;overflow:hidden;background:#fff;
-    }
-    .memberDot img{ width:100%; height:100%; object-fit:cover; }
-
-    .barTrack{
-      height:6px; background:#ddd; border-radius:999px; overflow:hidden; position:relative;
-    }
-    .barFill{
-      position:absolute; inset:0 auto 0 0; width:50%;
-      background:#666; border-radius:999px;
-    }
-    .barSub{
-      margin-top:3px; font-size:9px; color:#888;
-      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-    }
-    .minsText{
-      font-size:9px; color:#999; text-align:right;
-    }
-
-    .fab{
-      position:absolute;
-      right:10px;
-      bottom:56px;
-      width:32px; height:32px;
-      border-radius:999px;
-      border:1.5px solid #000;
-      background:#000; color:#fff;
-      font-size:20px; line-height:1;
-      display:grid; place-items:center;
-      cursor:pointer;
-      z-index:9;
-    }
-
-    /* modal */
-    .modalMask{
-      position:absolute; inset:0;
-      background:rgba(0,0,0,.22);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      z-index:50;
-    }
-
-    .modalCard{
-      width:84%;
-      border:1.5px solid #222;
-      border-radius:12px;
-      background:#fff;
-      padding:12px;
-    }
-
-    .modalHead{
-      position:relative;
-      text-align:center;
-      font-size:11px;
-      font-weight:800;
-      margin-bottom:10px;
-    }
-
-    .closeBtn{
-      position:absolute;
-      right:-2px; top:-2px;
-      width:18px; height:18px;
-      border-radius:999px;
-      border:1px solid #222;
-      background:#fff;
-      font-size:10px;
-      cursor:pointer;
-      display:grid; place-items:center;
-    }
-
-    .field{ margin-bottom:8px; }
-    .field label{
-      display:block;
-      font-size:8px;
-      font-weight:700;
-      margin-bottom:3px;
-      color:#444;
-    }
-
-    .select{
-      width:100%;
-      height:24px;
-      border:1px solid #222;
-      border-radius:3px;
-      padding:0 6px;
-      font-size:10px;
-      background:#fff;
-    }
-
-    .smallInput{
-      width:100%;
-      height:24px;
-      border:1px solid #222;
-      border-radius:3px;
-      padding:0 6px;
-      font-size:10px;
-      background:#fff;
-    }
-
-    .photoPick{
-      border:1px solid #222;
-      border-radius:3px;
-      height:44px;
-      display:grid;
-      grid-template-columns:44px 1fr;
-      overflow:hidden;
-      cursor:pointer;
-      background:#fff;
-    }
-    .photoPreview{
-      border-right:1px dashed #888;
-      display:grid; place-items:center;
-      font-size:8px; color:#bbb;
-      background:#fafafa; overflow:hidden;
-    }
-    .photoPreview img{ width:100%; height:100%; object-fit:cover; }
-    .photoLabel{
-      display:flex; align-items:center;
-      padding:0 8px;
-      color:#aaa; font-size:9px;
-    }
-
-    .starsLine{
-      height:22px;
-      border:1px solid #222;
-      border-radius:3px;
-      display:flex;
-      align-items:center;
-      gap:2px;
-      padding:0 6px;
-      font-size:10px;
-    }
-    .starBtn{
-      border:none; background:transparent; cursor:pointer;
-      padding:0; font-size:10px; opacity:.25;
-    }
-    .starBtn.on{ opacity:1; }
-
-    .timeRow{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:4px;
-    }
-
-    .modalBtns{
-      display:grid;
       gap:6px;
-      margin-top:8px;
+      min-height: 260px;
     }
 
-    .modalBtn{
-      height:24px;
-      border-radius:4px;
-      border:1px solid #222;
-      font-size:10px;
-      font-weight:700;
+    .recentItem{
+      border-bottom:1px solid #ececec;
+      padding-bottom:4px;
+    }
+
+    .recentRowHead{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
       cursor:pointer;
+      border-radius:8px;
+      padding:3px 2px;
+    }
+    .recentRowHead:hover{ background:rgba(0,0,0,.03); }
+
+    .recentLeft{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      min-width:0;
+    }
+
+    .recentAvatar,
+    .recentAvatarImg{
+      width:18px;
+      height:18px;
+      border-radius:50%;
+      flex:0 0 18px;
+    }
+
+    .recentAvatar{
+      border:1.4px solid #222;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:9px;
+      font-weight:700;
+      background:#f4d86c;
+    }
+
+    .recentAvatarImg{
+      object-fit:cover;
+      border:1.2px solid #222;
+    }
+
+    .recentText{ min-width:0; }
+    .recentTask{
+      font-size:10px;
+      line-height:1.1;
+      color:#222;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width:180px;
+    }
+    .recentMeta{
+      font-size:9px;
+      color:#777;
+      line-height:1.1;
+    }
+
+    .recentRight{
+      display:flex;
+      align-items:center;
+      gap:4px;
+      flex-shrink:0;
+    }
+
+    .recentDuration{
+      font-size:10px;
+      color:#999;
+    }
+
+    .recentChevron{
+      font-size:10px;
+      color:#666;
+      width:10px;
+      text-align:center;
+    }
+
+    .recentDetail{
+      margin-top:4px;
+      margin-left:24px;
+      margin-right:4px;
+      border:1px solid #ddd;
+      border-radius:8px;
+      padding:6px;
+      background:#fafafa;
+    }
+
+    .recentDetailLine{
+      font-size:10px;
+      color:#222;
+      display:flex;
+      gap:6px;
+      align-items:center;
+      margin-bottom:4px;
+    }
+
+    .recentDetailDesc{
+      font-size:10px;
+      line-height:1.35;
+      color:#333;
+      margin-bottom:6px;
+      white-space:pre-wrap;
+      word-break:break-word;
+    }
+
+    .recentDetailPhoto{
+      width:100%;
+      max-height:120px;
+      object-fit:cover;
+      border-radius:6px;
+      border:1px solid #ddd;
+      display:block;
+    }
+
+    .recentEmpty{
+      font-size:10px;
+      color:#999;
+      padding:8px 2px;
+    }
+
+    .fabBtn{
+      position:absolute;
+      right: 18px;
+      bottom: 78px;
+      width: 34px;
+      height: 34px;
+      border:none;
+      border-radius:50%;
+      background:#000;
+      color:#fff;
+      font-size:24px;
+      line-height:1;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow: 0 2px 8px rgba(0,0,0,.2);
+    }
+
+    .bottomNav{
+      position:absolute;
+      left:14px;
+      right:14px;
+      bottom:12px;
+      height:48px;
+      border-top:1px solid #e8e8e8;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 2px;
       background:#fff;
     }
-    .modalBtn.dark{
-      background:#666; border-color:#666; color:#fff;
+
+    .navDot{
+      width:26px;
+      height:26px;
+      border-radius:8px;
+      border:1.8px solid #222;
+      background:#fff;
+      cursor:pointer;
     }
 
-    .hint{
-      margin-top:6px;
-      min-height:12px;
-      font-size:9px;
-      color:#b00020;
+    .navDot.active{
+      background:#666;
+      border-color:#666;
     }
   </style>
 </head>
 <body>
-  <div class="centerWrap">
-    <div class="phone">
+  <div class="phone">
+    <div class="status">
+      <span>9:41</span>
+      <span>📶 WiFi 🔋</span>
+    </div>
 
-      <div class="wrap">
-        <div class="statusbar">
-          <div>9:41</div>
-          <div>📶 WiFi 🔋</div>
-        </div>
+    <div class="topbar">
+      <button id="topLeftBtn" class="topIconBtn" aria-label="Back"></button>
+      <div id="groupTitle" class="title">Group View</div>
+      <button id="topRightBtn" class="topIconBtn" aria-label="Profile"></button>
+    </div>
 
-        <div class="headerRow">
-          <button id="btnBack" class="ghostBtn" type="button"></button>
-          <div id="groupTitle" class="headerTitle">CS 101 Project</div>
-          <div id="btnProfile" class="topIconAvatar"></div>
-        </div>
+    <div class="sectionLabel">Contribution Overview</div>
+    <div id="overviewBox" class="overviewBox">
+      <div id="donutWrap" class="donutWrap"></div>
+    </div>
 
-        <div class="hr"></div>
+    <div class="sectionLabel" style="margin-top:14px;">Recent Activity</div>
+    <div id="recentList" class="recentList"></div>
 
-        <div class="main">
-          <div>
-            <div class="tinyTitle">CONTRIBUTION OVERVIEW</div>
-            <div class="overviewCard">
-              <div class="ringBox">
-                <canvas id="overviewCanvas" width="150" height="60"></canvas>
-              </div>
-            </div>
-          </div>
+    <button id="openLogBtn" class="fabBtn" aria-label="Log Work">+</button>
 
-          <div class="recentArea">
-            <div class="tinyTitle" style="margin-top:10px;">RECENT ACTIVITY</div>
-            <div id="recentList"></div>
-          </div>
-
-          <button id="btnFab" class="fab" type="button">+</button>
-        </div>
-      </div>
-
-      <div class="tabBar">
-        <button id="tabGroup" class="tabBtn active" type="button" title="Group View"></button>
-        <button id="tabDash" class="tabBtn" type="button" title="Dashboard"></button>
-        <button id="tabTime" class="tabBtn" type="button" title="Time Tracking"></button>
-      </div>
-
-      <!-- Log Work Modal -->
-      <div id="modalMask" class="modalMask">
-        <div class="modalCard">
-          <div class="modalHead">
-            Log Your Work
-            <button id="btnCloseModal" class="closeBtn" type="button">×</button>
-          </div>
-
-          <div class="field">
-            <label>Select your task</label>
-            <select id="taskSelect" class="select">
-              <option value="">Select</option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label>Or add new task</label>
-            <input id="newTaskInput" class="smallInput" placeholder="Task name">
-          </div>
-
-          <div class="field">
-            <label>Add photo</label>
-            <div id="photoPick" class="photoPick">
-              <div id="photoPreview" class="photoPreview">Add photo</div>
-              <div class="photoLabel">Tap to upload / camera</div>
-            </div>
-            <input id="photoInput" type="file" accept="image/*" capture="environment" style="display:none;">
-          </div>
-
-          <div class="field">
-            <label>Type</label>
-            <div id="starsLine" class="starsLine"></div>
-          </div>
-
-          <div class="field">
-            <label>Time</label>
-            <div class="timeRow">
-              <input id="hoursInput" class="smallInput" type="number" min="0" placeholder="hour">
-              <input id="minsInput" class="smallInput" type="number" min="0" max="59" placeholder="minute">
-            </div>
-          </div>
-
-          <div class="modalBtns">
-            <button id="btnSubmit" class="modalBtn dark" type="button">Submit</button>
-            <button id="btnCancel" class="modalBtn" type="button">Cancel</button>
-          </div>
-
-          <div id="hintMsg" class="hint"></div>
-        </div>
-      </div>
+    <div class="bottomNav">
+      <button id="navGroupView" class="navDot active" aria-label="Group View"></button>
+      <button id="navDashboard" class="navDot" aria-label="Dashboard"></button>
+      <button id="navTime" class="navDot" aria-label="Time Tracking"></button>
     </div>
   </div>
 
